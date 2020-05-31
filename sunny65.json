@@ -1,0 +1,8 @@
+[
+  { "name": "Yakima", "lat": 46.6020711, "lng": -120.5058987 },
+  { "name": "Leavenworth", "lat": 47.5962326, "lng": -120.6614765 },
+  { "name": "Tacoma", "lat": 47.2528768, "lng": -122.4442906 },
+  { "name": "Portland", "lat": 45.5051064, "lng": -122.6750261 },
+  { "name": "Bend", "lat": 44.0581728, "lng": -121.3153096 },
+  { "name": "Snoqualmie Falls", "lat": 47.5417209, "lng": -121.8377019 }
+]
