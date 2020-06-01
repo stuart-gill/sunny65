@@ -101,10 +101,9 @@ while True:
       # Add weather key
       destinations[result]["weather"]= []
       
-      url = weather_service_url + str(destinations[result]["lat"]) + "," + str(destinations[result]["lng"]) + "/forecast"
-      print('Retrieving', url)
+      # Get forecast API URL using lat and long
+      url = weather_service_url + str(destinations[result]["lat"]) + "," + str(destinations[result]["lng"])# + "/forecast"
       
-      # Weather.gov api point/forecast seems to be working poorly, deprecated-- need to change API
       try: 
         uh = urllib.request.urlopen(url, context=ctx)
       except urllib.error.URLError as e:
@@ -117,12 +116,32 @@ while True:
           js = json.loads(data)
       except:
           js = None
+      forecast_url = js["properties"]["forecast"]
 
+      # Now, get forcast using URL just retrieved
+      try: 
+        uh = urllib.request.urlopen(forecast_url, context=ctx)
+      except urllib.error.URLError as e:
+        print("weather.gov request failed for this reason: ", e.reason)
+        continue
+      data = uh.read().decode()
+      print('Retrieved', len(data), 'characters')
+
+      try:
+          js = json.loads(data)
+      except:
+          js = None
+
+
+      # print(json.dumps(js, indent=4))
+
+      # Add acceptable weather windows to destinations
       for period in js["properties"]["periods"]:
         if period["isDaytime"]:
           if period["temperature"] > user_min and period["temperature"] < user_max:
             destinations[result]["weather"].append(period)
 
+    # output acceptable weather windows at acceptable destinations
     for result in acceptable_results:
       if len(destinations[result]["weather"]):
         print('============================= \n')
@@ -132,40 +151,3 @@ while True:
           print("Temperature: ", str(day["temperature"]))
           print("Weather: ", day["shortForecast"])
         print('\n')
-
-
-      
-
-
-    # url = weather_service_url + str(destinations[0]["lat"]) + "," + str(destinations[0]["lng"]) + "/forecast"
-
-    # print('Retrieving', url)
-    # uh = urllib.request.urlopen(url, context=ctx)
-    # data = uh.read().decode()
-    # print('Retrieved', len(data), 'characters')
-
-    # try:
-    #     js = json.loads(data)
-    # except:
-    #     js = None
-
-    # if not js or 'status' not in js or js['status'] != 'OK':
-    #     print('==== Failure To Retrieve ====')
-    #     print(data)
-    #     continue
-
-    # print(json.dumps(js, indent=4))
-
-
-
-
-
-
-
-    # lat = js['results'][0]['geometry']['location']['lat']
-    # lng = js['results'][0]['geometry']['location']['lng']
-    # print('lat', lat, 'lng', lng)
-    # location = js['results'][0]['formatted_address']
-    # placeid = js['results'][0]['place_id']
-    # print(location)
-    # print("place id: ", placeid)
