@@ -59,7 +59,7 @@ while True:
     if api_key is not False: parms['key'] = api_key
     url = serviceurl + urllib.parse.urlencode(parms)
 
-    # GET LOCATIONS FROM DISTANCE MATRIX
+    # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
     print('Retrieving', url)
     uh = urllib.request.urlopen(url, context=ctx)
     data = uh.read().decode()
@@ -91,15 +91,25 @@ while True:
         acceptable_results.append(i)
 
     # print names of acceptable cities ('result' is the index in the list of destinations... should convert to IDs when using database)
+    print("Destinations within acceptable drive time: ")
     for result in acceptable_results:
       print(destinations[result]["name"])
 
 
     # GET WEATHER FROM WEATHER.GOV 
     for result in acceptable_results:
+      # Add weather key
+      destinations[result]["weather"]= []
+      
       url = weather_service_url + str(destinations[result]["lat"]) + "," + str(destinations[result]["lng"]) + "/forecast"
       print('Retrieving', url)
-      uh = urllib.request.urlopen(url, context=ctx)
+      
+      # Weather.gov api point/forecast seems to be working poorly, deprecated-- need to change API
+      try: 
+        uh = urllib.request.urlopen(url, context=ctx)
+      except urllib.error.URLError as e:
+        print("weather.gov request failed for this reason: ", e.reason)
+        continue
       data = uh.read().decode()
       print('Retrieved', len(data), 'characters')
 
@@ -108,8 +118,6 @@ while True:
       except:
           js = None
 
-      # Add weather key
-      destinations[result]["weather"]= []
       for period in js["properties"]["periods"]:
         if period["isDaytime"]:
           if period["temperature"] > user_min and period["temperature"] < user_max:
@@ -117,11 +125,14 @@ while True:
 
     for result in acceptable_results:
       if len(destinations[result]["weather"]):
+        print('============================= \n')
         print("Destination: ", destinations[result]["name"])
         for day in destinations[result]["weather"]:
           print("Day: ", day["name"])
           print("Temperature: ", str(day["temperature"]))
           print("Weather: ", day["shortForecast"])
+        print('\n')
+
 
       
 
