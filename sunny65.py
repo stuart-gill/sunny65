@@ -1,6 +1,7 @@
 # thinking about data transformations:
 # 0: initial input-- time and temp range
-# 1: filter destinations by distance (one or two steps? What to do as # of destinations gets large)
+# 1: filter destinations by distance, first using SQL call to compute distance using Lat/Long
+# 2: futher filter by checking actual drive time distance of desintaions within acceptable range using gmaps distance matrix
 # 2: further filter destinations by temperature range
 # 3: output destinations, weather + distance data
 
@@ -10,6 +11,7 @@ import json
 import ssl
 import config
 import sqlite3
+from geojson import geocode
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -20,21 +22,7 @@ serviceurl = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 
 weather_service_url = 'https://api.weather.gov/points/'
 
-# destinations = [
-#   'Yakima, WA',
-#   'Tacoma, WA',
-#   'Bellingham, WA',
-#   'Leavenworth, WA',
-#   'Portland, OR',
-#   'Lopez Island, WA',
-#   'Bend, OR'
-# ]
-
-# destinations_parm = ''
-# for destination in destinations:
-#   destinations_parm += destination + '|'
-
-# Read JSON to build destinations parameter, as opposed to hard coded array above 
+# Read JSON to build destinations parameter
 # Should be able to extend this to reading from a database
 str_data = open('sunny65.json').read()
 destinations = json.loads(str_data)
@@ -52,11 +40,12 @@ ctx.verify_mode = ssl.CERT_NONE
 while True:
     address = input('Enter your location: ') # 47.6062,-122.3321  is seattle
     if len(address) < 1: break
-
+    (lat,lng)=geocode(address)
+    print("lat lng ",lat,lng)
     parms = dict()
     parms['origins'] = address
     parms['destinations']= destinations_parm
-    if api_key is not False: parms['key'] = api_key
+    parms['key'] = api_key
     url = serviceurl + urllib.parse.urlencode(parms)
 
     # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
