@@ -9,6 +9,10 @@ import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
 import config
+import sqlite3
+
+conn = sqlite3.connect('sunny65_db.sqlite')
+cur = conn.cursor()
 
 api_key = config.GMAPS_API_KEY
 
@@ -46,7 +50,7 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 while True:
-    address = input('Enter your location: ')
+    address = input('Enter your location: ') # 47.6062,-122.3321  is seattle
     if len(address) < 1: break
 
     parms = dict()
