@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import csv
+import numpy as np
 
 # build and initialize sqlite database of destinations, using local json file to seed 
 # what other tables would be needed? users; states; users-destinations join table; 
@@ -94,9 +95,24 @@ with open(fname, newline='', errors='ignore') as csvfile:
       conn.commit()
 
 while True:
-  origin_lat = float(input("enter destination lat: "))
-  origin_lng = float(input("enter destination lng: "))
-  cur.execute('''SELECT * FROM Campsite WHERE lat - ? < 2 AND lng - ? < 2''',(origin_lat,origin_lng))
-  destination_id = cur.fetchone()[0]
-  print(destination_id)
+  origin_lat = input("enter destination lat: ")
+  if len(origin_lat) < 1:
+    origin_lat = 47.6062
+  origin_lng = input("enter destination lng: ")
+  if len(origin_lng) < 1:
+    origin_lng = -122.3321
+  acceptable_distance = int(input("enter acceptable distance: "))
+  EARTH_RADIUS = 3960
+  max_lat = origin_lat + np.rad2deg(acceptable_distance/EARTH_RADIUS)
+  min_lat = origin_lat - np.rad2deg(acceptable_distance/EARTH_RADIUS)
+
+  print(max_lat)
+  print(min_lat)
+
+  max_lng = origin_lng + np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+  min_lng = origin_lng - np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+
+  cur.execute('''SELECT * FROM Campsite WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?''',(min_lat, max_lat, min_lng, max_lng))
+  fetched = cur.fetchall()
+  print(fetched)
 
