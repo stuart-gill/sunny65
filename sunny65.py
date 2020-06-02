@@ -5,11 +5,9 @@
 # 2: further filter destinations by temperature range
 # 3: output destinations, weather + distance data
 
-
-# TODO: make distance matrix its own file and function. Input: one origin and list of destinations. Output: list of distances (or distance / name dicts?)
 # TODO: make weather api its own file and function. Input: lat, long. Output: list of weather dictionaries for that location
 # TODO: store weather forecast urls in location table in database
-
+# TODO: convert destinations by index to destinations by ID from database
 
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -23,21 +21,7 @@ from distance_matrix import distance_matrix
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
 
-api_key = config.GMAPS_API_KEY
-
-serviceurl = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
-
 weather_service_url = 'https://api.weather.gov/points/'
-
-# Read JSON to build destinations parameter
-# Should be able to extend this to reading from a database
-# str_data = open('sunny65.json').read()
-# destinations = json.loads(str_data)
-
-# destinations_parm = ''
-# for loc in destinations:
-#   destinations_parm += str(loc["lat"]) + "," + str(loc["lng"]) + '|'
-
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
@@ -45,51 +29,27 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 while True:
-    address = input('Enter your location: ') # 47.6062,-122.3321  is seattle
+    address = input('Enter your location: ') 
     if len(address) < 1: break
+    
+    # Use google api to get lat long for origin address
     (lat,lng)=geocode(address)
-    print("lat lng ",lat,lng)
+
     travel = float(input('How long are you willing to travel in hours? '))
-    est_miles = travel*45  # super rough guess of how far you could go in an hour
+    est_miles = travel*40  # super rough guess of how far you could go in an hour
+    
+    # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
     print(distance_filtered_locs)
+    
     # use google distance matrix to get actual drive time distances 
     js = distance_matrix(address, distance_filtered_locs)
-    # destinations_parm = ''
-    # for loc in distance_filtered_locs:
-    #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
-    # parms = dict()
-    # parms['origins'] = address
-    # parms['destinations']= destinations_parm
-    # parms['key'] = api_key
-    # url = serviceurl + urllib.parse.urlencode(parms)
-
-    # # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
-    # print('Retrieving', url)
-    # uh = urllib.request.urlopen(url, context=ctx)
-    # data = uh.read().decode()
-    # print('Retrieved', len(data), 'characters')
-
-    # try:
-    #     js = json.loads(data)
-    # except:
-    #     js = None
-
-    # if not js or 'status' not in js or js['status'] != 'OK':
-    #     print('==== Failure To Retrieve ====')
-    #     print(data)
-    #     continue
-
-    # print(json.dumps(js, indent=4))
-
-    # travel = float(input('How long are you willing to travel in hours? '))
+    elements = js["rows"][0]["elements"]
+  
     travel_seconds = travel * 3600
     acceptable_indices = []
-
     user_min = int(input("What's your minimum acceptable temperature? "))
     user_max = int(input("What's your maximum acceptable temperature? "))
-
-    elements = js["rows"][0]["elements"]
 
     # get list of indexes that pass travel duration test
     for i in range(len(elements)):

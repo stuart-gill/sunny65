@@ -2,6 +2,7 @@ import json
 import ssl
 import config
 import urllib.request, urllib.parse, urllib.error
+import polyline
 
 
 def distance_matrix(address, distance_filtered_locs):
@@ -15,11 +16,20 @@ def distance_matrix(address, distance_filtered_locs):
   ctx.check_hostname = False
   ctx.verify_mode = ssl.CERT_NONE
 
-  # Add each potential destination to destinations parameter
-  # TODO: implement encoded polyline format for Google distance matrix api call: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+  if len(distance_filtered_locs) >25:
+    distance_filtered_locs = distance_filtered_locs[0:24]
+
+  # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
   destinations_parm = ''
+  destinations_list = []
   for loc in distance_filtered_locs:
-    destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
+    loc_tuple = (loc[2], loc[3])
+    destinations_list.append(loc_tuple)
+  print(destinations_list)
+  destinations_parm = 'enc:' + polyline.encode(destinations_list) + ':'
+
+  # for loc in distance_filtered_locs:
+  #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
   
   # Build the rest of the api call 
   parms = dict()
@@ -43,5 +53,5 @@ def distance_matrix(address, distance_filtered_locs):
       print('==== Failure To Retrieve ====')
       print(data)
 
-  # print(json.dumps(js, indent=4))
+  print(json.dumps(js, indent=4))
   return js
