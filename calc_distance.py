@@ -3,7 +3,7 @@ import sqlite3
 import csv
 import numpy as np
 
-
+# This module takes the origin and accceptable distance as input, and returns locations from the database that meet the criteria 
 
 def calc_distance(origin_lat, origin_lng, acceptable_distance):
   # origin_lat = input("enter destination lat: ")

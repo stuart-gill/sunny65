@@ -8,8 +8,7 @@
 
 # TODO: make distance matrix its own file and function. Input: one origin and list of destinations. Output: list of distances (or distance / name dicts?)
 # TODO: make weather api its own file and function. Input: lat, long. Output: list of weather dictionaries for that location
-# TODO: use lat long of geocoded origin to return destinations from database within range. own function/file
-# 
+# TODO: store weather forecast urls in location table in database
 
 
 import urllib.request, urllib.parse, urllib.error
@@ -19,6 +18,7 @@ import config
 import sqlite3
 from geojson import geocode
 from calc_distance import calc_distance
+from distance_matrix import distance_matrix
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -53,32 +53,34 @@ while True:
     est_miles = travel*45  # super rough guess of how far you could go in an hour
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
     print(distance_filtered_locs)
-    destinations_parm = ''
-    for loc in distance_filtered_locs:
-      destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
-    parms = dict()
-    parms['origins'] = address
-    parms['destinations']= destinations_parm
-    parms['key'] = api_key
-    url = serviceurl + urllib.parse.urlencode(parms)
+    # use google distance matrix to get actual drive time distances 
+    js = distance_matrix(address, distance_filtered_locs)
+    # destinations_parm = ''
+    # for loc in distance_filtered_locs:
+    #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
+    # parms = dict()
+    # parms['origins'] = address
+    # parms['destinations']= destinations_parm
+    # parms['key'] = api_key
+    # url = serviceurl + urllib.parse.urlencode(parms)
 
-    # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
-    print('Retrieving', url)
-    uh = urllib.request.urlopen(url, context=ctx)
-    data = uh.read().decode()
-    print('Retrieved', len(data), 'characters')
+    # # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
+    # print('Retrieving', url)
+    # uh = urllib.request.urlopen(url, context=ctx)
+    # data = uh.read().decode()
+    # print('Retrieved', len(data), 'characters')
 
-    try:
-        js = json.loads(data)
-    except:
-        js = None
+    # try:
+    #     js = json.loads(data)
+    # except:
+    #     js = None
 
-    if not js or 'status' not in js or js['status'] != 'OK':
-        print('==== Failure To Retrieve ====')
-        print(data)
-        continue
+    # if not js or 'status' not in js or js['status'] != 'OK':
+    #     print('==== Failure To Retrieve ====')
+    #     print(data)
+    #     continue
 
-    print(json.dumps(js, indent=4))
+    # print(json.dumps(js, indent=4))
 
     # travel = float(input('How long are you willing to travel in hours? '))
     travel_seconds = travel * 3600
@@ -103,10 +105,13 @@ while True:
     destinations = []
     # GET WEATHER FROM WEATHER.GOV 
     for i in acceptable_indices:
-      # Add weather key
+      print("ran with i: ", i)
+      # Build destinations dictionary
       destinations.append({"id":distance_filtered_locs[i][0], "name":distance_filtered_locs[i][1], "lat":distance_filtered_locs[i][2], "lng":distance_filtered_locs[i][3], "weather":[]})
       
       # Get forecast API URL using lat and long
+      # Could push this url to database? Then just use database stored url, and only run this api call again if the database address doesn't work 
+      # Could put all this functionality in a separate module
       url = weather_service_url + str(distance_filtered_locs[i][2]) + "," + str(distance_filtered_locs[i][3])# + "/forecast"
       
       try: 
