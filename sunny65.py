@@ -6,12 +6,18 @@
 # 3: output destinations, weather + distance data
 
 
+# TODO: make distance matrix its own file and function. Input: one origin and list of destinations. Output: list of distances
+# TODO: make weather api its own file and function. Input: lat, long. Output: list of weather dictionaries for that location
+# TODO: use lat long of geocoded origin to return destinations from database within range. own function/file
+
+
 import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
 import config
 import sqlite3
 from geojson import geocode
+from calc_distance import calc_distance
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -42,6 +48,10 @@ while True:
     if len(address) < 1: break
     (lat,lng)=geocode(address)
     print("lat lng ",lat,lng)
+    travel = float(input('How long are you willing to travel in hours? '))
+    est_miles = travel*45  # super rough guess of how far you could go in an hour
+    distance_filtered_locs = calc_distance(lat,lng,est_miles)
+    print(distance_filtered_locs)
     parms = dict()
     parms['origins'] = address
     parms['destinations']= destinations_parm
@@ -66,7 +76,7 @@ while True:
 
     # print(json.dumps(js, indent=4))
 
-    travel = float(input('How long are you willing to travel in hours? '))
+    # travel = float(input('How long are you willing to travel in hours? '))
     travel_seconds = travel * 3600
     acceptable_results = []
 
