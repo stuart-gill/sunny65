@@ -22,8 +22,6 @@ from weather import weather_forecast
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
 
-weather_service_url = 'https://api.weather.gov/points/'
-
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -72,7 +70,9 @@ while True:
       
       lat = str(distance_filtered_locs[i][2])
       lng = str(distance_filtered_locs[i][3])
-      js = weather_forecast(lat,lng)
+      weather_url = distance_filtered_locs[i][5]
+      ID = distance_filtered_locs[i][0]
+      js = weather_forecast(lat,lng, weather_url, ID)
       # print(json.dumps(js, indent=4))
 
       # Add acceptable weather windows to destinations
