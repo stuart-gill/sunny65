@@ -16,6 +16,8 @@ def distance_matrix(address, distance_filtered_locs):
   ctx.check_hostname = False
   ctx.verify_mode = ssl.CERT_NONE
 
+  # Only gets first 25 destinations because that's the max per api call... 
+  # TODO: build a table of origins and a join table (many to many) of origin->destination general travel times. This would require generalizing origins -- "seattle area" -- to avoid having infinite origins
   if len(distance_filtered_locs) >25:
     distance_filtered_locs = distance_filtered_locs[0:24]
 

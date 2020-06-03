@@ -17,6 +17,7 @@ import sqlite3
 from geojson import geocode
 from calc_distance import calc_distance
 from distance_matrix import distance_matrix
+from weather import weather_forecast
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -69,40 +70,9 @@ while True:
       # Build destinations dictionary
       destinations.append({"id":distance_filtered_locs[i][0], "name":distance_filtered_locs[i][1], "lat":distance_filtered_locs[i][2], "lng":distance_filtered_locs[i][3], "weather":[]})
       
-      # Get forecast API URL using lat and long
-      # Could push this url to database? Then just use database stored url, and only run this api call again if the database address doesn't work 
-      # Could put all this functionality in a separate module
-      url = weather_service_url + str(distance_filtered_locs[i][2]) + "," + str(distance_filtered_locs[i][3])# + "/forecast"
-      
-      try: 
-        uh = urllib.request.urlopen(url, context=ctx)
-      except urllib.error.URLError as e:
-        print("weather.gov request failed for this reason: ", e.reason)
-        continue
-      data = uh.read().decode()
-      print('Retrieved', len(data), 'characters')
-
-      try:
-          js = json.loads(data)
-      except:
-          js = None
-      forecast_url = js["properties"]["forecast"]
-
-      # Now, get forcast using URL just retrieved
-      try: 
-        uh = urllib.request.urlopen(forecast_url, context=ctx)
-      except urllib.error.URLError as e:
-        print("weather.gov request failed for this reason: ", e.reason)
-        continue
-      data = uh.read().decode()
-      print('Retrieved', len(data), 'characters')
-
-      try:
-          js = json.loads(data)
-      except:
-          js = None
-
-
+      lat = str(distance_filtered_locs[i][2])
+      lng = str(distance_filtered_locs[i][3])
+      js = weather_forecast(lat,lng)
       # print(json.dumps(js, indent=4))
 
       # Add acceptable weather windows to destinations
