@@ -3,6 +3,7 @@ import ssl
 import config
 import urllib.request, urllib.parse, urllib.error
 import polyline
+import math
 
 
 def distance_matrix(address, distance_filtered_locs):
@@ -16,44 +17,52 @@ def distance_matrix(address, distance_filtered_locs):
   ctx.check_hostname = False
   ctx.verify_mode = ssl.CERT_NONE
 
-  # Only gets first 25 destinations because that's the max per api call... 
+
   # TODO: build a table of origins and a join table (many to many) of origin->destination general travel times. This would require generalizing origins -- "seattle area" -- to avoid having infinite origins
-  if len(distance_filtered_locs) >25:
-    distance_filtered_locs = distance_filtered_locs[0:24]
 
-  # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
-  destinations_parm = ''
-  destinations_list = []
-  for loc in distance_filtered_locs:
-    loc_tuple = (loc[2], loc[3])
-    destinations_list.append(loc_tuple)
-  print(destinations_list)
-  destinations_parm = 'enc:' + polyline.encode(destinations_list) + ':'
 
-  # for loc in distance_filtered_locs:
-  #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
-  
-  # Build the rest of the api call 
-  parms = dict()
-  parms['origins'] = address
-  parms['destinations']= destinations_parm
-  parms['key'] = api_key
-  url = serviceurl + urllib.parse.urlencode(parms)
+# At this point I'm batching distance API requests to work with Googles 25 destination max per call. 
+# Could get expensive at .005 cents per call. 
 
-  # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
-  print('Retrieving', url)
-  uh = urllib.request.urlopen(url, context=ctx)
-  data = uh.read().decode()
-  print('Retrieved', len(data), 'characters')
+  elements = []
+  iterations = int(len(distance_filtered_locs)/25)
 
-  try:
-      js = json.loads(data)
-  except:
-      js = None
+  for i in range(iterations):
+    # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+    destinations_parm = ''
+    destinations_list = []
+    for loc in distance_filtered_locs[(i*25):((i+1)*25)]:
+      loc_tuple = (loc[2], loc[3])
+      destinations_list.append(loc_tuple)
+    print(destinations_list)
+    destinations_parm = 'enc:' + polyline.encode(destinations_list) + ':'
 
-  if not js or 'status' not in js or js['status'] != 'OK':
-      print('==== Failure To Retrieve ====')
-      print(data)
+    # for loc in distance_filtered_locs:
+    #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
+    
+    # Build the rest of the api call 
+    parms = dict()
+    parms['origins'] = address
+    parms['destinations']= destinations_parm
+    parms['key'] = api_key
+    url = serviceurl + urllib.parse.urlencode(parms)
 
-  print(json.dumps(js, indent=4))
-  return js
+    # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
+    print('Retrieving', url)
+    uh = urllib.request.urlopen(url, context=ctx)
+    data = uh.read().decode()
+    print('Retrieved', len(data), 'characters')
+
+    try:
+        js = json.loads(data)
+    except:
+        js = None
+
+    if not js or 'status' not in js or js['status'] != 'OK':
+        print('==== Failure To Retrieve ====')
+        print(data)
+
+    print(json.dumps(js, indent=4))
+    elements+=(js["rows"][0]["elements"])
+
+  return elements

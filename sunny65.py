@@ -42,8 +42,9 @@ while True:
     print(distance_filtered_locs)
     
     # use google distance matrix to get actual drive time distances 
-    js = distance_matrix(address, distance_filtered_locs)
-    elements = js["rows"][0]["elements"]
+    elements = distance_matrix(address, distance_filtered_locs)
+    # elements = js["rows"][0]["elements"]
+    print("elements = ", elements)
   
     travel_seconds = travel * 3600
     acceptable_indices = []
