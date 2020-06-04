@@ -14,6 +14,7 @@ import json
 import ssl
 import config
 import sqlite3
+import codecs
 from geojson import geocode
 from calc_distance import calc_distance
 from distance_matrix import distance_matrix
@@ -83,8 +84,20 @@ while True:
             destinations[-1]["weather"].append(period)
 
     # output acceptable weather windows at acceptable destinations
+    # also create map
+    fhand = codecs.open('where.js', 'w', "utf-8")
+    fhand.write("myData = [\n")
+    count = 0
     for destination in destinations:
       if len(destination["weather"]):
+        # print(destination)
+        lat = destination["lat"]
+        lng = destination["lng"]
+        name = destination["name"]
+        count = count + 1
+        if count > 1 : fhand.write(",\n")
+        output = "["+str(lat)+","+str(lng)+", '"+name+"']"
+        fhand.write(output)
         print('============================= \n')
         print("Destination: ", destination["name"])
         for day in destination["weather"]:
@@ -92,3 +105,7 @@ while True:
           print("Temperature: ", str(day["temperature"]))
           print("Weather: ", day["shortForecast"])
         print('\n')
+    fhand.write("\n];\n")
+    fhand.close()
+    print(count, "records written to where.js")
+    print("Open where.html to view the data in a browser")
