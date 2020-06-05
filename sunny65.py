@@ -41,7 +41,7 @@ while True:
     
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
-    print(distance_filtered_locs)
+    print("distance filtered locs ", distance_filtered_locs)
     
     # use google distance matrix to get actual drive time distances 
     durations = distance_matrix(address, zipcode, distance_filtered_locs)
