@@ -44,9 +44,14 @@ while True:
     print(distance_filtered_locs)
     
     # use google distance matrix to get actual drive time distances 
-    elements = distance_matrix(address, distance_filtered_locs)
+    durations = distance_matrix(address, zipcode, distance_filtered_locs)
     # elements = js["rows"][0]["elements"]
-    print("elements = ", elements)
+    print("durations = ", durations)
+
+    if len(durations) != len(distance_filtered_locs):
+      print("durations != locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
+      break
+
   
     travel_seconds = travel * 3600
     acceptable_indices = []
@@ -54,8 +59,8 @@ while True:
     user_max = int(input("What's your maximum acceptable temperature? "))
 
     # get list of indexes that pass travel duration test
-    for i in range(len(elements)):
-      if elements[i]["status"] == "OK" and elements[i]["duration"]["value"] < travel_seconds:
+    for i in range(len(durations)):
+      if durations[i] < travel_seconds:
         acceptable_indices.append(i)
         
 

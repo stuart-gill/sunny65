@@ -80,7 +80,8 @@ def build_zip_database():
         zipcode_id    INTEGER,
         campsite_id   INTEGER,
         duration      INTEGER,
-        last_updated  TEXT
+        last_updated  TEXT,
+        PRIMARY KEY (zipcode_id, campsite_id)
     );
     ''')
 
@@ -128,3 +129,4 @@ def get_travel_time(origin_zipcode, campsite_id):
     cur.execute('SELECT duration FROM Travel_Time WHERE zipcode_id = zipcode_id AND campsite_id = campsite_id')
     duration = cur.fetchone()[0]
     return duration
+

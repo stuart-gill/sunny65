@@ -4,9 +4,10 @@ import config
 import urllib.request, urllib.parse, urllib.error
 import polyline
 import math
+from sunny65_db import set_travel_time
 
 
-def distance_matrix(address, distance_filtered_locs):
+def distance_matrix(address, zipcode, distance_filtered_locs):
 
   api_key = config.GMAPS_API_KEY
 
@@ -24,8 +25,9 @@ def distance_matrix(address, distance_filtered_locs):
 # At this point I'm batching distance API requests to work with Googles 25 destination max per call. 
 # Could get expensive at .005 cents per call. 
 
-  elements = []
-  iterations = int(len(distance_filtered_locs)/25)
+  durations = []
+  iterations = math.ceil(len(distance_filtered_locs)/25)
+  print("\n\n ITERATIONS: ", iterations, "\n\n")
 
   for i in range(iterations):
     # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
@@ -63,6 +65,16 @@ def distance_matrix(address, distance_filtered_locs):
         print(data)
 
     print(json.dumps(js, indent=4))
-    elements+=(js["rows"][0]["elements"])
+    elements=(js["rows"][0]["elements"])
+    for element in elements:
+      if element["status"] == "OK":
+        durations.append(element["duration"]["value"])
+      else: durations.append(-1)
+    
+    for j in range(i*25,(i+1)*25):
+      if j < len(distance_filtered_locs):
+        campsite_id = distance_filtered_locs[j][0]
+        travel_time = durations[j]
+        set_travel_time(zipcode, campsite_id, travel_time)
 
-  return elements
+  return durations
