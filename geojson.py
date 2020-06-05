@@ -48,5 +48,6 @@ def geocode(locale):
     lng = js['results'][0]['geometry']['location']['lng']
     location = js['results'][0]['formatted_address']
     placeid = js['results'][0]['place_id']
+    zipcode = js['results'][0]['address_components'][7]['short_name']
     print(location)
-    return(lat,lng)
+    return(lat,lng,zipcode)

@@ -5,9 +5,10 @@
 # 2: further filter destinations by temperature range
 # 3: output destinations, weather + distance data
 
-# TODO: make weather api its own file and function. Input: lat, long. Output: list of weather dictionaries for that location
-# TODO: store weather forecast urls in location table in database
 # TODO: convert destinations by index to destinations by ID from database
+# TODO: improve map html output. Somehow list drive time? 
+# TODO: Add usage of zip code -> destination drive time table
+
 
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -33,7 +34,7 @@ while True:
     if len(address) < 1: break
     
     # Use google api to get lat long for origin address
-    (lat,lng)=geocode(address)
+    (lat,lng,zipcode)=geocode(address)
 
     travel = float(input('How long are you willing to travel in hours? '))
     est_miles = travel*40  # super rough guess of how far you could go in an hour
