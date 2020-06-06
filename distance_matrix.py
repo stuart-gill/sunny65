@@ -44,7 +44,7 @@ def distance_matrix(address, zipcode, distance_filtered_locs):
     
     # Build the rest of the api call 
     parms = dict()
-    parms['origins'] = address
+    parms['origins'] = zipcode
     parms['destinations']= destinations_parm
     parms['key'] = api_key
     url = serviceurl + urllib.parse.urlencode(parms)

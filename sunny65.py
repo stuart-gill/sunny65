@@ -8,7 +8,7 @@
 # TODO: convert destinations by index to destinations by ID from database
 # TODO: improve map html output. Somehow list drive time? 
 # TODO: Add usage of zip code -> destination drive time table-- need to first try database, then send distance matrix requests bundled
-
+# TODO: for every address, do search by zip code, not by address
 
 
 
@@ -44,6 +44,18 @@ while True:
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
     print("distance filtered locs ", distance_filtered_locs)
+
+    campsites = []
+    for campsite in distance_filtered_locs:
+      new_campsite = {}
+      new_campsite['id']= campsite[0]
+      new_campsite['name']= campsite[1]
+      new_campsite['lat']= campsite[2]
+      new_campsite['lng']= campsite[3]
+      new_campsite['weather_url']= campsite[5]
+      new_campsite['travel_time']= -1
+      campsites.append(new_campsite)
+    
     
     # use google distance matrix to get actual drive time distances 
     durations = distance_matrix(address, zipcode, distance_filtered_locs)
