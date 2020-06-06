@@ -46,8 +46,13 @@ def geocode(locale):
 
     lat = js['results'][0]['geometry']['location']['lat']
     lng = js['results'][0]['geometry']['location']['lng']
-    location = js['results'][0]['formatted_address']
-    placeid = js['results'][0]['place_id']
-    zipcode = js['results'][0]['address_components'][7]['short_name']
-    print(location)
+    # location = js['results'][0]['formatted_address']
+    # placeid = js['results'][0]['place_id']
+    
+    # location of zipcode in json varies depending on what kind of address is input... this seems to catch most cases 
+    zipcode = None
+    for component in js['results'][0]['address_components']:
+        if component['types'][0] == 'postal_code':
+            zipcode = component['short_name']
+
     return(lat,lng,zipcode)

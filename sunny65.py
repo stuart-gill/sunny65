@@ -7,7 +7,9 @@
 
 # TODO: convert destinations by index to destinations by ID from database
 # TODO: improve map html output. Somehow list drive time? 
-# TODO: Add usage of zip code -> destination drive time table
+# TODO: Add usage of zip code -> destination drive time table-- need to first try database, then send distance matrix requests bundled
+
+
 
 
 import urllib.request, urllib.parse, urllib.error
