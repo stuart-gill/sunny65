@@ -126,7 +126,6 @@ def get_travel_time(origin_zipcode, campsite_id):
     cur = conn.cursor()
     cur.execute('SELECT id FROM Zipcode WHERE zipcode = ? ', (origin_zipcode, ))
     zipcode_id = cur.fetchone()[0]
-    print(zipcode_id)
     cur.execute('SELECT duration FROM Travel_Time WHERE zipcode_id = ? AND campsite_id = ?',(zipcode_id,campsite_id))
     duration = cur.fetchone()
     if duration:

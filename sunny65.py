@@ -22,6 +22,7 @@ from geojson import geocode
 from calc_distance import calc_distance
 from distance_matrix import distance_matrix
 from weather import weather_forecast
+from sunny65_db import get_travel_time
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -32,7 +33,7 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 while True:
-    address = input('Enter your location: ') 
+    address = input('Enter your location zipcode: ') 
     if len(address) < 1: break
     
     # Use google api to get lat long for origin address
@@ -40,87 +41,79 @@ while True:
 
     travel = float(input('How long are you willing to travel in hours? '))
     est_miles = travel*40  # super rough guess of how far you could go in an hour
+    travel_seconds = travel * 3600 
     
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
     print("distance filtered locs ", distance_filtered_locs)
 
+    
     campsites = []
-    for campsite in distance_filtered_locs:
-      new_campsite = {}
-      new_campsite['id']= campsite[0]
-      new_campsite['name']= campsite[1]
-      new_campsite['lat']= campsite[2]
-      new_campsite['lng']= campsite[3]
-      new_campsite['weather_url']= campsite[5]
-      new_campsite['travel_time']= -1
-      campsites.append(new_campsite)
-    
-    
-    # use google distance matrix to get actual drive time distances 
+    i=0
+    # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
     durations = distance_matrix(address, zipcode, distance_filtered_locs)
-    # elements = js["rows"][0]["elements"]
-    print("durations = ", durations)
 
     if len(durations) != len(distance_filtered_locs):
-      print("durations != locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
+      print("length of durations != length of locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
       break
 
-  
-    travel_seconds = travel * 3600
-    acceptable_indices = []
-    user_min = int(input("What's your minimum acceptable temperature? "))
-    user_max = int(input("What's your maximum acceptable temperature? "))
+    # build array of campsite objects with travel times and empty weather list
+    for loc in distance_filtered_locs:
+      new_campsite = {}
+      new_campsite['ID']= loc[0]
+      new_campsite['name']= loc[1]
+      new_campsite['lat']= loc[2]
+      new_campsite['lng']= loc[3]
+      new_campsite['weather_url']= loc[5]
+      new_campsite['travel_time']= durations[i]
+      new_campsite['weather']=[]
+      campsites.append(new_campsite)
+      i+=1
 
-    # get list of indexes that pass travel duration test
-    for i in range(len(durations)):
-      if durations[i] < travel_seconds:
-        acceptable_indices.append(i)
+    print("campsites:  ", campsites)
+
+    # object version
+    travel_time_filtered_campsites = []
+    for campsite in campsites:
+      if campsite['travel_time'] < travel_seconds:
+        travel_time_filtered_campsites.append(campsite)
         
 
     # print names of acceptable cities ( index in the list of destinations... should convert to IDs when using database)
     print("Destinations within acceptable drive time: ")
-    for i in acceptable_indices:
-      print(distance_filtered_locs[i][1])
+    # for i in acceptable_indices:
+    #   print(distance_filtered_locs[i][1])
+    for campsite in travel_time_filtered_campsites:
+      print(campsite['name'])
 
-    destinations = []
-    # GET WEATHER FROM WEATHER.GOV 
-    for i in acceptable_indices:
-      print("ran with i: ", i)
-      # Build destinations dictionary
-      destinations.append({"id":distance_filtered_locs[i][0], "name":distance_filtered_locs[i][1], "lat":distance_filtered_locs[i][2], "lng":distance_filtered_locs[i][3], "weather":[]})
-      
-      lat = str(distance_filtered_locs[i][2])
-      lng = str(distance_filtered_locs[i][3])
-      weather_url = distance_filtered_locs[i][5]
-      ID = distance_filtered_locs[i][0]
-      js = weather_forecast(lat,lng, weather_url, ID)
-      # print(json.dumps(js, indent=4))
-
-      # Add acceptable weather windows to destinations
-      for period in js["properties"]["periods"]:
-        if period["isDaytime"]:
+    # get user's weather preference and add weather details for those days at each campsite where weather is within bounds
+    user_min = int(input("What's your minimum acceptable temperature? "))
+    user_max = int(input("What's your maximum acceptable temperature? "))
+    for campsite in travel_time_filtered_campsites:
+      js = weather_forecast(campsite['lat'],campsite['lng'],campsite['weather_url'],campsite['ID'])
+      for period in js['properties']['periods']:
+        if period['isDaytime']:
           if period["temperature"] > user_min and period["temperature"] < user_max:
-            destinations[-1]["weather"].append(period)
+            campsite["weather"].append(period)
 
     # output acceptable weather windows at acceptable destinations
     # also create map
     fhand = codecs.open('where.js', 'w', "utf-8")
     fhand.write("myData = [\n")
     count = 0
-    for destination in destinations:
-      if len(destination["weather"]):
-        # print(destination)
-        lat = destination["lat"]
-        lng = destination["lng"]
-        name = destination["name"]
+    for campsite in travel_time_filtered_campsites:
+      if len(campsite["weather"]):
+        # print(campsite)
+        lat = campsite["lat"]
+        lng = campsite["lng"]
+        name = campsite["name"]
         count = count + 1
         if count > 1 : fhand.write(",\n")
         output = "["+str(lat)+","+str(lng)+", '"+name+"']"
         fhand.write(output)
         print('============================= \n')
-        print("Destination: ", destination["name"])
-        for day in destination["weather"]:
+        print("Destination: ", campsite["name"])
+        for day in campsite["weather"]:
           print("Day: ", day["name"])
           print("Temperature: ", str(day["temperature"]))
           print("Weather: ", day["shortForecast"])
@@ -129,3 +122,4 @@ while True:
     fhand.close()
     print(count, "records written to where.js")
     print("Open where.html to view the data in a browser")
+  

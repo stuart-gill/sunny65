@@ -4,7 +4,7 @@ import config
 import urllib.request, urllib.parse, urllib.error
 import polyline
 import math
-from sunny65_db import set_travel_time
+from sunny65_db import set_travel_time, get_travel_time
 
 
 def distance_matrix(address, zipcode, distance_filtered_locs):
@@ -19,28 +19,33 @@ def distance_matrix(address, zipcode, distance_filtered_locs):
   ctx.verify_mode = ssl.CERT_NONE
 
 
-  # TODO: build a table of origins and a join table (many to many) of origin->destination general travel times. This would require generalizing origins -- "seattle area" -- to avoid having infinite origins
+  durations_from_db = []
+  locs_sans_durations = []
+  durations_from_api = []
 
+  # get the durations we have stored in database, and make sure we go look up durations for those that we don't have, and add those to database
+  # TODO: set an expiration on durations in the database?
+  for loc in distance_filtered_locs:
+    travel_time=get_travel_time(zipcode,loc[0])
+    durations_from_db.append(travel_time)
+    if not travel_time:
+      locs_sans_durations.append(loc)
 
-# At this point I'm batching distance API requests to work with Googles 25 destination max per call. 
-# Could get expensive at .005 cents per call. 
+  
+  print("locs sans durations: ", locs_sans_durations)
 
-  durations = []
-  iterations = math.ceil(len(distance_filtered_locs)/25)
+  iterations = math.ceil(len(locs_sans_durations)/25)
   print("\n\n ITERATIONS: ", iterations, "\n\n")
 
   for i in range(iterations):
     # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
     destinations_parm = ''
     destinations_list = []
-    for loc in distance_filtered_locs[(i*25):((i+1)*25)]:
+    for loc in locs_sans_durations[(i*25):((i+1)*25)]:
       loc_tuple = (loc[2], loc[3])
       destinations_list.append(loc_tuple)
     print(destinations_list)
     destinations_parm = 'enc:' + polyline.encode(destinations_list) + ':'
-
-    # for loc in distance_filtered_locs:
-    #   destinations_parm += str(loc[2]) + "," + str(loc[3]) + '|'
     
     # Build the rest of the api call 
     parms = dict()
@@ -68,13 +73,20 @@ def distance_matrix(address, zipcode, distance_filtered_locs):
     elements=(js["rows"][0]["elements"])
     for element in elements:
       if element["status"] == "OK":
-        durations.append(element["duration"]["value"])
-      else: durations.append(-1)
+        durations_from_api.append(element["duration"]["value"])
+      else: durations_from_api.append(-1)
     
     for j in range(i*25,(i+1)*25):
-      if j < len(distance_filtered_locs):
-        campsite_id = distance_filtered_locs[j][0]
-        travel_time = durations[j]
+      # to prevent out of range error
+      if j < len(locs_sans_durations):
+        campsite_id = locs_sans_durations[j][0]
+        travel_time = durations_from_api[j]
         set_travel_time(zipcode, campsite_id, travel_time)
 
-  return durations
+  # now, shuffle the durations retrieved from api in with the durations we already got from the database
+  complete_durations = []
+  for duration in durations_from_db:
+    if duration == None:
+      complete_durations.append(durations_from_api.pop(0))
+    else: complete_durations.append(duration)
+  return complete_durations
