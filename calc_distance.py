@@ -3,16 +3,10 @@ import sqlite3
 import csv
 import numpy as np
 
-# This module takes the origin and accceptable distance as input, and returns locations from the database that meet the criteria 
+ 
 
 def calc_distance(origin_lat, origin_lng, acceptable_distance):
-  # origin_lat = input("enter destination lat: ")
-  # if len(origin_lat) < 1:
-  #   origin_lat = 47.6062
-  # origin_lng = input("enter destination lng: ")
-  # if len(origin_lng) < 1:
-  #   origin_lng = -122.3321
-  # acceptable_distance = int(input("enter acceptable distance: "))
+  """Fetches destinations that are within a certain radius of the origin"""
 
   conn = sqlite3.connect('sunny65_db.sqlite')
   cur = conn.cursor()

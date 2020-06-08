@@ -51,7 +51,7 @@ while True:
     campsites = []
     i=0
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
-    durations = distance_matrix(address, zipcode, distance_filtered_locs)
+    durations = distance_matrix(zipcode, distance_filtered_locs)
 
     if len(durations) != len(distance_filtered_locs):
       print("length of durations != length of locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))

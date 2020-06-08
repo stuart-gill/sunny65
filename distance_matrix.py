@@ -7,7 +7,16 @@ import math
 from sunny65_db import set_travel_time, get_travel_time
 
 
-def distance_matrix(address, zipcode, distance_filtered_locs):
+
+def distance_matrix(zipcode, distance_filtered_locs):
+  """Fetches travel times from origin zipcode to various campsites. First it checks the database to see if we have the travel time stored, and then it checks the google distance matrix API for all those durations not found in database, and also adds those newfound durations to the database
+  Args: 
+    zipcode: integer, origin zipcode
+    distance_filtered_locs: list of tuples with information about potential destinations
+
+  Returns: 
+    A list of travel time durations in seconds that corresponds to the list of potential destinations. Travel times that cannot be retrieved with the google api are listed as -1
+  """
 
   api_key = config.GMAPS_API_KEY
 

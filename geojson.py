@@ -8,6 +8,10 @@ api_key = False
 # https://developers.google.com/maps/documentation/geocoding/intro
 
 def geocode(locale):
+    """fetch lat, long, and zipcode for a location
+    Currently using url from Python for Everybody course, probably need to change that
+    """
+
     api_key = False
     if api_key is False:
         api_key = 42

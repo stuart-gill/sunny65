@@ -28,10 +28,12 @@ def api_call(url):
   return js
 
 
-# Weather.gov api requires two calls-- first you sent lat/long to get applicable weather url. Then you call that url
-# To save time, I'm adding the weather URL to the campsite database. This method checks to see if the URL is already stored there, and if not, it gets the url and stores it, along with making the actual api call for the forecast. In this way we're building the database as searches are made 
-# TODO: build in failure resistance... if the stored weather_url fails, go back and get a new one
+
 def weather_forecast(lat,lng, weather_url, ID):
+  """Weather.gov api requires two calls-- first you sent lat/long to get applicable weather url. Then you call that url to get the forecast.
+  To save time, I'm adding the weather URL to the campsite database. This method checks to see if the URL is already stored there, and if not, it gets the url and stores it, along with making the actual api call for the forecast. In this way we're building the database as searches are made 
+  TODO: build in failure resistance... if the stored weather_url fails, go back and get a new one"""
+  
   if weather_url:
     return api_call(weather_url)
   else:
