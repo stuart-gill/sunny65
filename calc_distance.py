@@ -6,7 +6,7 @@ import numpy as np
  
 
 def calc_distance(origin_lat, origin_lng, acceptable_distance):
-  """Fetches destinations that are within a certain radius of the origin"""
+  """Fetches campsites that are within a certain radius of the origin lat/long"""
 
   conn = sqlite3.connect('sunny65_db.sqlite')
   cur = conn.cursor()

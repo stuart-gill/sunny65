@@ -48,16 +48,18 @@ while True:
     print("distance filtered locs ", distance_filtered_locs)
 
     
-    campsites = []
-    i=0
+
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
     durations = distance_matrix(zipcode, distance_filtered_locs)
+    campsites = []
+    i=0
 
+    # make sure we got a travel duration for every potential campsite 
     if len(durations) != len(distance_filtered_locs):
       print("length of durations != length of locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
       break
 
-    # build array of campsite objects with travel times and empty weather list
+    # build list of campsite objects with travel times and empty weather list
     for loc in distance_filtered_locs:
       new_campsite = {}
       new_campsite['ID']= loc[0]
@@ -72,17 +74,13 @@ while True:
 
     print("campsites:  ", campsites)
 
-    # object version
+    # now build list of subset of campsites that have acceptable drive time 
     travel_time_filtered_campsites = []
     for campsite in campsites:
       if campsite['travel_time'] < travel_seconds:
         travel_time_filtered_campsites.append(campsite)
         
-
-    # print names of acceptable cities ( index in the list of destinations... should convert to IDs when using database)
     print("Destinations within acceptable drive time: ")
-    # for i in acceptable_indices:
-    #   print(distance_filtered_locs[i][1])
     for campsite in travel_time_filtered_campsites:
       print(campsite['name'])
 
