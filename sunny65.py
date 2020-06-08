@@ -22,7 +22,7 @@ from geojson import geocode
 from calc_distance import calc_distance
 from distance_matrix import distance_matrix
 from weather import weather_forecast
-from sunny65_db import get_travel_time
+from sunny65_db import get_travel_time, build_campsite_database, build_zip_database
 
 conn = sqlite3.connect('sunny65_db.sqlite')
 cur = conn.cursor()
@@ -120,4 +120,7 @@ while True:
     fhand.close()
     print(count, "records written to where.js")
     print("Open where.html to view the data in a browser")
+    repeat = input('would you like to check a new origin? y/n: ')
+    if repeat != 'y':
+      break
   
