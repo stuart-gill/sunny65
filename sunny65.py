@@ -5,10 +5,8 @@
 # 2: further filter destinations by temperature range
 # 3: output destinations, weather + distance data
 
-# TODO: convert destinations by index to destinations by ID from database
 # TODO: improve map html output. Somehow list drive time? 
-# TODO: Add usage of zip code -> destination drive time table-- need to first try database, then send distance matrix requests bundled
-# TODO: for every address, do search by zip code, not by address
+# TODO: 
 
 
 
@@ -22,15 +20,6 @@ from geojson import geocode
 from calc_distance import calc_distance
 from distance_matrix import distance_matrix
 from weather import weather_forecast
-from sunny65_db import get_travel_time, build_campsite_database, build_zip_database
-
-conn = sqlite3.connect('sunny65_db.sqlite')
-cur = conn.cursor()
-
-# Ignore SSL certificate errors
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 while True:
     address = input('Enter your location zipcode: ') 
@@ -46,8 +35,6 @@ while True:
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = calc_distance(lat,lng,est_miles)
     print("distance filtered locs ", distance_filtered_locs)
-
-    
 
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
     durations = distance_matrix(zipcode, distance_filtered_locs)
@@ -120,6 +107,7 @@ while True:
     fhand.close()
     print(count, "records written to where.js")
     print("Open where.html to view the data in a browser")
+    
     repeat = input('would you like to check a new origin? y/n: ')
     if repeat != 'y':
       break

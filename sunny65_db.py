@@ -7,8 +7,6 @@ import numpy as np
 # using csv from http://www.uscampgrounds.info/takeit.html
 
 # TODO: add weather column for forecast, and weather_updated column for time
-# TODO: add zip-code table, and zip-code <=> destination join table many to many to list drive times
-# TODO: 
 
 # READ CSV, build Camping table
 def build_campsite_database(): 
@@ -49,7 +47,6 @@ def build_campsite_database():
             lat = row[1]
             lng = row[0]
             state = row[12]
-            # print((name, lat, lng))
         
             cur.execute('''INSERT OR IGNORE INTO State (name)
             VALUES (?) ''', (state, ))
@@ -98,7 +95,6 @@ def build_zip_database():
             zipcode = row[0]
             lat = row[3]
             lng = row[4]
-            # print((name, lat, lng))
 
             cur.execute('''INSERT OR IGNORE INTO Zipcode (zipcode, lat, lng)
             VALUES ( ?, ?, ?)''', ( zipcode, lat, lng) )
