@@ -30,13 +30,18 @@ while True:
     travel_seconds = travel * 3600 
     
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
-    distance_filtered_locs = get_distance_filtered_locs(lat,lng,est_miles)
-    print("distance filtered locs ", distance_filtered_locs)
+    # distance_filtered_locs = get_distance_filtered_locs(lat,lng,est_miles)
+    # print("distance filtered locs ", distance_filtered_locs)
 
-    # attempt at left join: works!!
-    # distance_filtered_locs2 = get_distance_filtered_locs2(lat,lng,zipcode,est_miles)
-    # print("distance filtered locs 2: ", distance_filtered_locs2)
-    # break
+    # attempt at left join on travel_time to include travel time from origin zip to each campsite: works!!
+    # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
+    # Convert from tuples to dictionary
+    col_names = ('ID', 'name', 'lat', 'lng', 'weather_url', 'travel_time')
+    loc_tuples = get_distance_filtered_locs2(lat,lng,zipcode,est_miles)
+    print("loc_tuples ", loc_tuples)
+    distance_filtered_locs2 = [dict(zip(col_names, loc_tuple)) for loc_tuple in loc_tuples]
+    print("distance filtered locs 2: ", distance_filtered_locs2)
+
 
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
     durations = distance_matrix(zipcode, distance_filtered_locs)
