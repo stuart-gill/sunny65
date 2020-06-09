@@ -129,8 +129,8 @@ def get_travel_time(origin_zipcode, campsite_id):
     else: return None
 
 
-database_build = input("do you want to rebuild databases? y/n: \n")
-if database_build == 'y':
-  build_campsite_database()
-  build_zip_database()
-  print("Databases built")
+# database_build = input("do you want to rebuild databases? y/n: \n")
+# if database_build == 'y':
+#   build_campsite_database()
+#   build_zip_database()
+#   print("Databases built")

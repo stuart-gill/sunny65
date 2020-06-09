@@ -4,11 +4,7 @@
 # 2: futher filter by checking actual drive time distance of desintaions within acceptable range using gmaps distance matrix
 # 2: further filter destinations by temperature range
 # 3: output destinations, weather + distance data
-
 # TODO: improve map html output. Somehow list drive time? 
-# TODO: 
-
-
 
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -21,8 +17,9 @@ from calc_distance import calc_distance
 from distance_matrix import distance_matrix
 from weather import weather_forecast
 
+
 while True:
-    address = input('Enter your location zipcode: ') 
+    address = input('Enter your location zipcode or address: ') 
     if len(address) < 1: break
     
     # Use google api to get lat long for origin address

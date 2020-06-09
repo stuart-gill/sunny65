@@ -32,7 +32,7 @@ https://numpy.org/
 
 ### Installing
 
-If you want to rebuild the database file (sunny65_db.sqlite), run in command line:
+If you want to rebuild the database file (sunny65_db.sqlite), uncomment the code at the end of sunny65_db.py and run in command line:
 
 ```
 $python3 sunny65_db.py

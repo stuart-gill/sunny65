@@ -10,6 +10,8 @@ api_key = False
 def geocode(locale):
     """fetch lat, long, and zipcode for a location
     Currently using url from Python for Everybody course, probably need to change that
+    args: 
+        locale: string, can be address or zip code or institution (like Univeristy of Washington), but not city name unless city has only one zip code
     """
 
     api_key = False
@@ -46,12 +48,10 @@ def geocode(locale):
         print('==== Failure To Retrieve ====')
         print(data)
 
-    print(json.dumps(js, indent=4))
+    # print(json.dumps(js, indent=4))
 
     lat = js['results'][0]['geometry']['location']['lat']
     lng = js['results'][0]['geometry']['location']['lng']
-    # location = js['results'][0]['formatted_address']
-    # placeid = js['results'][0]['place_id']
     
     # location of zipcode in json varies depending on what kind of address is input... this seems to catch most cases 
     zipcode = None
