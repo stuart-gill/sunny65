@@ -36,38 +36,45 @@ while True:
     # attempt at left join on travel_time to include travel time from origin zip to each campsite: works!!
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     # Convert from tuples to dictionary
+    # this is using a generator pattern I think, idea from David Beazley's powerpoint deck on Generators
     col_names = ('ID', 'name', 'lat', 'lng', 'weather_url', 'travel_time')
     loc_tuples = get_distance_filtered_locs2(lat,lng,zipcode,est_miles)
-    print("loc_tuples ", loc_tuples)
+    # print("loc_tuples ", loc_tuples)
     distance_filtered_locs2 = [dict(zip(col_names, loc_tuple)) for loc_tuple in loc_tuples]
+    # silly to loop again, but have to add weather key and empty array
+    for loc in distance_filtered_locs2:
+      loc.update({'weather':[]})
     print("distance filtered locs 2: ", distance_filtered_locs2)
+    distance_matrix(zipcode, distance_filtered_locs2)
+    print("distance filtered locs 2 with durations: ", distance_filtered_locs2)
+
 
 
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
-    durations = distance_matrix(zipcode, distance_filtered_locs)
-    campsites = []
-    i=0
+    # durations = distance_matrix(zipcode, distance_filtered_locs)
+    # campsites = []
+    # i=0
 
     # make sure we got a travel duration for every potential campsite 
-    if len(durations) != len(distance_filtered_locs):
-      print("length of durations != length of locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
-      break
+    # if len(durations) != len(distance_filtered_locs):
+    #   print("length of durations != length of locs, retrieval error, quitting", len(durations), len(distance_filtered_locs))
+    #   break
 
     # build list of campsite objects with travel times and empty weather list
     # could try using 'zip' for this, but travel_time is not an element returned from distance_filtered_locs
-    for loc in distance_filtered_locs:
-      new_campsite = {}
-      new_campsite['ID']= loc[0]
-      new_campsite['name']= loc[1]
-      new_campsite['lat']= loc[2]
-      new_campsite['lng']= loc[3]
-      new_campsite['weather_url']= loc[5]
-      new_campsite['travel_time']= durations[i]
-      new_campsite['weather']=[]
-      campsites.append(new_campsite)
-      i+=1
+    # for loc in distance_filtered_locs:
+    #   new_campsite = {}
+    #   new_campsite['ID']= loc[0]
+    #   new_campsite['name']= loc[1]
+    #   new_campsite['lat']= loc[2]
+    #   new_campsite['lng']= loc[3]
+    #   new_campsite['weather_url']= loc[5]
+    #   new_campsite['travel_time']= durations[i]
+    #   new_campsite['weather']=[]
+    #   campsites.append(new_campsite)
+    #   i+=1
 
-    print("campsites:  ", campsites)
+    # print("campsites:  ", campsites)
 
     # now build list of subset of campsites that have acceptable drive time 
     # basic loop method:

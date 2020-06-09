@@ -34,11 +34,13 @@ def distance_matrix(zipcode, distance_filtered_locs):
 
   # get the durations we have stored in database, and make sure we go look up durations for those that we don't have, and add those to database
   # TODO: set an expiration on durations in the database?
-  for loc in distance_filtered_locs:
-    travel_time=get_travel_time(zipcode,loc[0])
-    durations_from_db.append(travel_time)
-    if not travel_time:
-      locs_sans_durations.append(loc)
+  # for loc in distance_filtered_locs:
+  #   travel_time=get_travel_time(zipcode,loc[0])
+  #   durations_from_db.append(travel_time)
+  #   if not travel_time:
+  #     locs_sans_durations.append(loc)
+
+  locs_sans_durations = [loc for loc in distance_filtered_locs if not loc['travel_time']]
 
   
   print("locs sans durations: ", locs_sans_durations)
@@ -51,7 +53,7 @@ def distance_matrix(zipcode, distance_filtered_locs):
     destinations_parm = ''
     destinations_list = []
     for loc in locs_sans_durations[(i*25):((i+1)*25)]:
-      loc_tuple = (loc[2], loc[3])
+      loc_tuple = (loc['lat'], loc['lng'])
       destinations_list.append(loc_tuple)
     print(destinations_list)
     destinations_parm = 'enc:' + polyline.encode(destinations_list) + ':'
@@ -88,14 +90,15 @@ def distance_matrix(zipcode, distance_filtered_locs):
     for j in range(i*25,(i+1)*25):
       # to prevent out of range error
       if j < len(locs_sans_durations):
-        campsite_id = locs_sans_durations[j][0]
+        campsite_id = locs_sans_durations[j]['ID']
         travel_time = durations_from_api[j]
         set_travel_time(zipcode, campsite_id, travel_time)
+        locs_sans_durations[j]['travel_time']= durations_from_api[j]
 
   # now, shuffle the durations retrieved from api in with the durations we already got from the database
-  complete_durations = []
-  for duration in durations_from_db:
-    if duration == None:
-      complete_durations.append(durations_from_api.pop(0))
-    else: complete_durations.append(duration)
-  return complete_durations
+  # complete_durations = []
+  # for duration in durations_from_db:
+  #   if duration == None:
+  #     complete_durations.append(durations_from_api.pop(0))
+  #   else: complete_durations.append(duration)
+  # return complete_durations
