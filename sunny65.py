@@ -15,7 +15,7 @@ import codecs
 from geojson import geocode
 from distance_matrix import distance_matrix
 from weather import weather_forecast
-from sunny65_db import get_distance_filtered_locs
+from sunny65_db import get_distance_filtered_locs, get_distance_filtered_locs2
 
 
 while True:
@@ -32,6 +32,11 @@ while True:
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
     distance_filtered_locs = get_distance_filtered_locs(lat,lng,est_miles)
     print("distance filtered locs ", distance_filtered_locs)
+
+    # attempt at left join: works!!
+    # distance_filtered_locs2 = get_distance_filtered_locs2(lat,lng,zipcode,est_miles)
+    # print("distance filtered locs 2: ", distance_filtered_locs2)
+    # break
 
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
     durations = distance_matrix(zipcode, distance_filtered_locs)

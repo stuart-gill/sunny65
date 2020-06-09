@@ -150,6 +150,43 @@ def get_distance_filtered_locs(origin_lat, origin_lng, acceptable_distance):
     fetched = cur.fetchall()
     return(fetched)
 
+def get_distance_filtered_locs2(origin_lat, origin_lng, origin_zipcode, acceptable_distance):
+    """Fetches campsites that are within a certain radius of the origin lat/long"""
+
+    conn = sqlite3.connect('sunny65_db.sqlite')
+    cur = conn.cursor()
+
+    cur.execute('SELECT id FROM Zipcode WHERE zipcode = ? ', (origin_zipcode, ))
+    zipcode_id = cur.fetchone()[0]
+
+    EARTH_RADIUS = 3960
+    max_lat = origin_lat + np.rad2deg(acceptable_distance/EARTH_RADIUS)
+    min_lat = origin_lat - np.rad2deg(acceptable_distance/EARTH_RADIUS)
+
+    print(max_lat)
+    print(min_lat)
+
+    max_lng = origin_lng + np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+    min_lng = origin_lng - np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+
+    cur.execute('''
+    SELECT 
+        Campsite.id,
+        Campsite.name,
+        Campsite.lat,
+        Campsite.lng,
+        Campsite.weather_url,
+        duration 
+    FROM 
+        Campsite 
+    LEFT JOIN Travel_Time ON
+        Campsite.id = Travel_Time.campsite_id AND
+        Travel_Time.zipcode_id = ?
+    WHERE 
+        Campsite.lat BETWEEN ? AND ? AND Campsite.lng BETWEEN ? AND ?
+        ''',(zipcode_id, min_lat, max_lat, min_lng, max_lng))
+    fetched = cur.fetchall()
+    return(fetched)
 
 # database_build = input("do you want to rebuild databases? y/n: \n")
 # if database_build == 'y':
