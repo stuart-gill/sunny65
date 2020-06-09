@@ -13,9 +13,9 @@ import config
 import sqlite3
 import codecs
 from geojson import geocode
-from calc_distance import calc_distance
 from distance_matrix import distance_matrix
 from weather import weather_forecast
+from sunny65_db import get_distance_filtered_locs
 
 
 while True:
@@ -30,7 +30,7 @@ while True:
     travel_seconds = travel * 3600 
     
     # Get potential destinations filtered by "as the crow flies" distances calculated by sql database
-    distance_filtered_locs = calc_distance(lat,lng,est_miles)
+    distance_filtered_locs = get_distance_filtered_locs(lat,lng,est_miles)
     print("distance filtered locs ", distance_filtered_locs)
 
     # get a list of actual travel times for all these potential destinations. Some will come from database, some will come from Google API
@@ -44,6 +44,7 @@ while True:
       break
 
     # build list of campsite objects with travel times and empty weather list
+    # could try using 'zip' for this, but travel_time is not an element returned from distance_filtered_locs
     for loc in distance_filtered_locs:
       new_campsite = {}
       new_campsite['ID']= loc[0]
@@ -59,10 +60,19 @@ while True:
     print("campsites:  ", campsites)
 
     # now build list of subset of campsites that have acceptable drive time 
-    travel_time_filtered_campsites = []
-    for campsite in campsites:
-      if campsite['travel_time'] < travel_seconds:
-        travel_time_filtered_campsites.append(campsite)
+    # basic loop method:
+    # travel_time_filtered_campsites = []
+    # for campsite in campsites:
+    #   if campsite['travel_time'] < travel_seconds:
+    #     travel_time_filtered_campsites.append(campsite)
+
+    # filter with lambda method
+    # one liner is cool, but maybe harder to read? 
+    # interesting-- filter returns an 'iterator' which is basically a linked list, not a dynamic array. Can't access indices
+    # travel_time_filtered_campsites = filter(lambda campsite: campsite['travel_time'] < travel_seconds, campsites)
+
+    # list comprehension method:
+    travel_time_filtered_campsites = [campsite for campsite in campsites if campsite['travel_time'] < travel_seconds]
         
     print("Destinations within acceptable drive time: ")
     for campsite in travel_time_filtered_campsites:
@@ -90,9 +100,12 @@ while True:
         lng = campsite["lng"]
         name = campsite["name"]
         count = count + 1
+        # write js file with array of campsite names and lats
         if count > 1 : fhand.write(",\n")
         output = "["+str(lat)+","+str(lng)+", '"+name+"']"
         fhand.write(output)
+
+        # then print campsites with weather to console
         print('============================= \n')
         print("Destination: ", campsite["name"])
         for day in campsite["weather"]:

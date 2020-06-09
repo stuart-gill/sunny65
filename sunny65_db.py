@@ -118,6 +118,9 @@ def set_travel_time(origin_zipcode, campsite_id, seconds):
     conn.commit()
 
 def get_travel_time(origin_zipcode, campsite_id):
+    """Gets travel time for a single zipcode->campsite trip
+    This should perhaps be combined with get_distance_filtered_locs-- Left Join?"""
+
     conn = sqlite3.connect('sunny65_db.sqlite')
     cur = conn.cursor()
     cur.execute('SELECT id FROM Zipcode WHERE zipcode = ? ', (origin_zipcode, ))
@@ -127,6 +130,25 @@ def get_travel_time(origin_zipcode, campsite_id):
     if duration:
         return duration[0]
     else: return None
+
+def get_distance_filtered_locs(origin_lat, origin_lng, acceptable_distance):
+    """Fetches campsites that are within a certain radius of the origin lat/long"""
+
+    conn = sqlite3.connect('sunny65_db.sqlite')
+    cur = conn.cursor()
+    EARTH_RADIUS = 3960
+    max_lat = origin_lat + np.rad2deg(acceptable_distance/EARTH_RADIUS)
+    min_lat = origin_lat - np.rad2deg(acceptable_distance/EARTH_RADIUS)
+
+    print(max_lat)
+    print(min_lat)
+
+    max_lng = origin_lng + np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+    min_lng = origin_lng - np.rad2deg(acceptable_distance/EARTH_RADIUS/np.cos(np.deg2rad(origin_lat)));
+
+    cur.execute('''SELECT * FROM Campsite WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?''',(min_lat, max_lat, min_lng, max_lng))
+    fetched = cur.fetchall()
+    return(fetched)
 
 
 # database_build = input("do you want to rebuild databases? y/n: \n")
