@@ -9,13 +9,14 @@ from sunny65_db import set_travel_time, get_travel_time
 
 
 def distance_matrix(zipcode, distance_filtered_locs):
-  """Fetches travel times from origin zipcode to various campsites. First it checks the database to see if we have the travel time stored, and then it checks the google distance matrix API for all those durations not found in database, and also adds those newfound durations to the database
+  """Checks distance filterd locs array of dicts for locs without travel times. Those travel times will be added to list to be sent to google distance matrix. The travel durations found (in seconds) will be added to the database and to the distance_filtered_locs array of dictionaries. 
+
   Args: 
     zipcode: integer, origin zipcode
-    distance_filtered_locs: list of tuples with information about potential destinations
+    distance_filtered_locs: list of dicts with information about potential destinations
 
   Returns: 
-    A list of travel time durations in seconds that corresponds to the list of potential destinations. Travel times that cannot be retrieved with the google api are listed as -1
+    void
   """
 
   api_key = config.GMAPS_API_KEY
@@ -32,13 +33,7 @@ def distance_matrix(zipcode, distance_filtered_locs):
   locs_sans_durations = []
   durations_from_api = []
 
-  # get the durations we have stored in database, and make sure we go look up durations for those that we don't have, and add those to database
   # TODO: set an expiration on durations in the database?
-  # for loc in distance_filtered_locs:
-  #   travel_time=get_travel_time(zipcode,loc[0])
-  #   durations_from_db.append(travel_time)
-  #   if not travel_time:
-  #     locs_sans_durations.append(loc)
 
   locs_sans_durations = [loc for loc in distance_filtered_locs if not loc['travel_time']]
 
@@ -95,10 +90,4 @@ def distance_matrix(zipcode, distance_filtered_locs):
         set_travel_time(zipcode, campsite_id, travel_time)
         locs_sans_durations[j]['travel_time']= durations_from_api[j]
 
-  # now, shuffle the durations retrieved from api in with the durations we already got from the database
-  # complete_durations = []
-  # for duration in durations_from_db:
-  #   if duration == None:
-  #     complete_durations.append(durations_from_api.pop(0))
-  #   else: complete_durations.append(duration)
-  # return complete_durations
+
