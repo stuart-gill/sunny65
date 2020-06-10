@@ -9,7 +9,7 @@ ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-weather_service_url = 'https://api.weather.gov/points/'
+WEATHER_SERVICE_URL = 'https://api.weather.gov/points/'
 
 
 def api_call(url):
@@ -24,7 +24,6 @@ def api_call(url):
       js = json.loads(data)
   except:
       js = None
-  
   return js
 
 
@@ -46,7 +45,7 @@ def weather_forecast(lat,lng, weather_url, ID):
   else:
     lat = str(lat)
     lng = str(lng)
-    url = weather_service_url + lat + "," + lng
+    url = WEATHER_SERVICE_URL + lat + "," + lng
     forecast_url = api_call(url)["properties"]["forecast"]
     set_weather_url(forecast_url,ID)
     return api_call(forecast_url)
