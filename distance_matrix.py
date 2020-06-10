@@ -12,15 +12,14 @@ def distance_matrix(zipcode, distance_filtered_locs):
     Those travel times will be added to list to be sent to google distance matrix.
     The travel durations found (in seconds) will be added to the database and to
     the distance_filtered_locs array of dictionaries.
-  Args:
-    zipcode: integer, origin zipcode
-    distance_filtered_locs: list of dicts with information about potential destinations
-  Returns:
-    void
+    Args:
+        zipcode: integer, origin zipcode
+        distance_filtered_locs: list of dicts with information about potential destinations
+    Returns:
+        void
   """
 
     api_key = config.GMAPS_API_KEY
-
     serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
     # Ignore SSL certificate errors
@@ -62,21 +61,21 @@ def distance_matrix(zipcode, distance_filtered_locs):
 
         # GET LOCATIONS FROM GOOGLE DISTANCE MATRIX
         print("Retrieving", url)
-        uh = urllib.request.urlopen(url, context=ctx)
-        data = uh.read().decode()
+        url_handle = urllib.request.urlopen(url, context=ctx)
+        data = url_handle.read().decode()
         print("Retrieved", len(data), "characters")
 
         try:
-            js = json.loads(data)
+            locations_json = json.loads(data)
         except:
-            js = None
+            locations_json = None
 
-        if not js or "status" not in js or js["status"] != "OK":
+        if not locations_json or "status" not in locations_json or locations_json["status"] != "OK":
             print("==== Failure To Retrieve ====")
             print(data)
 
-        print(json.dumps(js, indent=4))
-        elements = js["rows"][0]["elements"]
+        print(json.dumps(locations_json, indent=4))
+        elements = locations_json["rows"][0]["elements"]
         for element in elements:
             if element["status"] == "OK":
                 durations_from_api.append(element["duration"]["value"])

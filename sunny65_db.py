@@ -23,7 +23,9 @@ def build_campsite_database():
         lat    DECIMAL(9,6) NOT NULL,
         lng    DECIMAL(9,5) NOT NULL,
         state_id INTEGER NOT NULL, 
-        weather_url TEXT 
+        weather_url TEXT,
+        weather_forecast TEXT,
+        forecast_last_updated TEXT
     );
 
     CREATE TABLE State (
@@ -117,6 +119,20 @@ def set_weather_url(url, ID):
     cur.execute("""UPDATE Campsite SET weather_url = ? WHERE id = ?""", (url, ID))
     conn.commit()
 
+def set_weather_forecast(forecast, ID):
+    conn = sqlite3.connect("sunny65_db.sqlite")
+    cur = conn.cursor()
+    cur.execute(
+        """
+    UPDATE Campsite
+    SET 
+        weather_forecast = ?,
+        forecast_last_updated = datetime('now')
+    WHERE 
+        id = ?
+        """, (forecast, ID))
+    conn.commit()
+
 
 def set_travel_time(origin_zipcode, campsite_id, seconds):
     conn = sqlite3.connect("sunny65_db.sqlite")
@@ -124,9 +140,11 @@ def set_travel_time(origin_zipcode, campsite_id, seconds):
     cur.execute("SELECT id FROM Zipcode WHERE zipcode = ? ", (origin_zipcode,))
     zipcode_id = cur.fetchone()[0]
     cur.execute(
-        """INSERT OR REPLACE INTO Travel_Time
-    (zipcode_id, campsite_id, duration, last_updated) VALUES ( ?, ?, ?, datetime('now') )""",
-        (zipcode_id, campsite_id, seconds),
+        """
+        INSERT OR REPLACE INTO Travel_Time
+        (zipcode_id, campsite_id, duration, last_updated)
+        VALUES ( ?, ?, ?, datetime('now') )
+        """,(zipcode_id, campsite_id, seconds),
     )
     conn.commit()
 
@@ -202,5 +220,7 @@ def get_distance_filtered_locs(
 # database_build = input("do you want to rebuild databases? y/n: \n")
 # if database_build == 'y':
 #   build_campsite_database()
-#   build_zip_database()
+# #   build_zip_database()
 #   print("Databases built")
+
+set_weather_forecast("it's gonna rain", 1)
