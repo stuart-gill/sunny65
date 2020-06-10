@@ -133,6 +133,24 @@ def set_weather_forecast(forecast, ID):
         """, (forecast, ID))
     conn.commit()
 
+def get_weather_forecast(ID):
+    """get forecast if it's less than an hour old"""
+    conn = sqlite3.connect("sunny65_db.sqlite")
+    cur = conn.cursor()
+    cur.execute(
+        """
+    SELECT weather_forecast
+    FROM Campsite
+    WHERE 
+        id = ?
+        AND
+        (julianday('now') - julianday(forecast_last_updated))*24 < 1
+        """, (ID))
+    forecast = cur.fetchone()
+    if forecast:
+        return forecast[0]
+    else:
+        return None
 
 def set_travel_time(origin_zipcode, campsite_id, seconds):
     conn = sqlite3.connect("sunny65_db.sqlite")
@@ -223,4 +241,5 @@ def get_distance_filtered_locs(
 # #   build_zip_database()
 #   print("Databases built")
 
-set_weather_forecast("it's gonna rain", 1)
+# set_weather_forecast("it's gonna rain", 1)
+print(get_weather_forecast('1'))
