@@ -15,7 +15,6 @@ def build_campsite_database():
         """
     DROP TABLE IF EXISTS Campsite;
     DROP TABLE IF EXISTS State;
-    DROP TABLE IF EXISTS Zipcode;
 
     CREATE TABLE Campsite (
         id     INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -119,7 +118,7 @@ def set_weather_url(url, ID):
     cur.execute("""UPDATE Campsite SET weather_url = ? WHERE id = ?""", (url, ID))
     conn.commit()
 
-def set_weather_forecast(forecast, ID):
+def set_weather_forecast(forecast, campsite_id):
     conn = sqlite3.connect("sunny65_db.sqlite")
     cur = conn.cursor()
     cur.execute(
@@ -130,11 +129,11 @@ def set_weather_forecast(forecast, ID):
         forecast_last_updated = datetime('now')
     WHERE 
         id = ?
-        """, (forecast, ID))
+        """, (forecast, campsite_id))
     conn.commit()
 
-def get_weather_forecast(ID):
-    """get forecast if it's less than an hour old"""
+def get_weather_forecast(campsite_id):
+    """get forecast from database if it's less than an hour old"""
     conn = sqlite3.connect("sunny65_db.sqlite")
     cur = conn.cursor()
     cur.execute(
@@ -145,7 +144,7 @@ def get_weather_forecast(ID):
         id = ?
         AND
         (julianday('now') - julianday(forecast_last_updated))*24 < 1
-        """, (ID))
+        """, (campsite_id,))
     forecast = cur.fetchone()
     if forecast:
         return forecast[0]
@@ -238,8 +237,8 @@ def get_distance_filtered_locs(
 # database_build = input("do you want to rebuild databases? y/n: \n")
 # if database_build == 'y':
 #   build_campsite_database()
-# #   build_zip_database()
+#   build_zip_database()
 #   print("Databases built")
 
 # set_weather_forecast("it's gonna rain", 1)
-print(get_weather_forecast('1'))
+# print(get_weather_forecast('1'))

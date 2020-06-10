@@ -1,7 +1,7 @@
 import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
-from sunny65_db import set_weather_url
+from sunny65_db import set_weather_url, get_weather_forecast, set_weather_forecast
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
@@ -18,12 +18,12 @@ def api_call(url):
         print("weather.gov request failed for this reason: ", error.reason)
     data_string = url_handle.read().decode()
     print("Retrieved", len(data_string), "characters")
-
-    try:
-        data_dict = json.loads(data_string)
-    except:
-        data_dict = None
-    return data_dict
+    return data_string
+    # try:
+    #     data_dict = json.loads(data_string)
+    # except:
+    #     data_dict = None
+    # return data_dict
 
 
 def weather_forecast(lat, lng, weather_url, campsite_id):
@@ -41,11 +41,21 @@ def weather_forecast(lat, lng, weather_url, campsite_id):
     forecast JSON
   TODO: build in failure resistance... if the stored weather_url fails, get a new one"""
 
+    forecast_from_database = get_weather_forecast(campsite_id)
+    if forecast_from_database:
+        return json.loads(forecast_from_database)
     if weather_url:
-        return api_call(weather_url)
+        forecast_json_string = api_call(weather_url)
+        set_weather_forecast(forecast_json_string, campsite_id)
+        forecast_dict = json.loads(forecast_json_string)
+        return forecast_dict
     lat = str(lat)
     lng = str(lng)
     url = WEATHER_SERVICE_URL + lat + "," + lng
-    forecast_url = api_call(url)["properties"]["forecast"]
+    forecast_url = json.loads(api_call(url))["properties"]["forecast"]
     set_weather_url(forecast_url, campsite_id)
-    return api_call(forecast_url)
+    forecast_json_string = api_call(forecast_url)
+    set_weather_forecast(forecast_json_string, campsite_id)
+    forecast_dict = json.loads(forecast_json_string)
+    return forecast_dict
+
