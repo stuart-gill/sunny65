@@ -1,20 +1,21 @@
+import urllib.request, urllib.parse, urllib.error
+import math
 import json
 import ssl
-import config
-import urllib.request, urllib.parse, urllib.error
 import polyline
-import math
-from sunny65_db import set_travel_time, get_travel_time
+import config
+from sunny65_db import set_travel_time
 
 
 def distance_matrix(zipcode, distance_filtered_locs):
-    """Checks distance filterd locs array of dicts for locs without travel times. Those locs will be added to list to be sent to google distance matrix. The travel durations found (in seconds) will be added to the database and to the distance_filtered_locs array of dictionaries. 
-
-  Args: 
+    """Checks distance filterd locs array of dicts for locs without travel times.
+    Those travel times will be added to list to be sent to google distance matrix.
+    The travel durations found (in seconds) will be added to the database and to
+    the distance_filtered_locs array of dictionaries.
+  Args:
     zipcode: integer, origin zipcode
     distance_filtered_locs: list of dicts with information about potential destinations
-
-  Returns: 
+  Returns:
     void
   """
 
@@ -27,7 +28,6 @@ def distance_matrix(zipcode, distance_filtered_locs):
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
 
-    durations_from_db = []
     locs_sans_durations = []
     durations_from_api = []
 
@@ -43,7 +43,8 @@ def distance_matrix(zipcode, distance_filtered_locs):
     print("\n\n ITERATIONS: ", iterations, "\n\n")
 
     for i in range(iterations):
-        # Add each potential destination to destinations parameter using encoded polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
+        # Add each potential destination to destinations parameter using encoded
+        # polyline: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
         destinations_parm = ""
         destinations_list = []
         for loc in locs_sans_durations[(i * 25) : ((i + 1) * 25)]:
