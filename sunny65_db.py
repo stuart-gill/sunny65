@@ -210,9 +210,6 @@ def get_distance_filtered_locs(
     max_lat = origin_lat + np.rad2deg(acceptable_distance / EARTH_RADIUS)
     min_lat = origin_lat - np.rad2deg(acceptable_distance / EARTH_RADIUS)
 
-    print(max_lat)
-    print(min_lat)
-
     max_lng = origin_lng + np.rad2deg(
         acceptable_distance / EARTH_RADIUS / np.cos(np.deg2rad(origin_lat))
     )
@@ -228,13 +225,13 @@ def get_distance_filtered_locs(
         Campsite.lat,
         Campsite.lng,
         Campsite.weather_url,
-        duration 
-    FROM 
-        Campsite 
+        duration
+    FROM
+        Campsite
     LEFT JOIN Travel_Time ON
         Campsite.id = Travel_Time.campsite_id AND
         Travel_Time.zipcode_id = ?
-    WHERE 
+    WHERE
         Campsite.lat BETWEEN ? AND ? AND Campsite.lng BETWEEN ? AND ?
         """,
         (zipcode_id, min_lat, max_lat, min_lng, max_lng),
