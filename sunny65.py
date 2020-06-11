@@ -14,6 +14,9 @@ while True:
 
     # Use google api to get lat long for origin address
     (lat, lng, zipcode) = geocode(address)
+    if not (lat or lng or zipcode):
+        print("unsuitable address input \n")
+        continue
 
     travel = float(input("How long are you willing to travel in hours? "))
     est_miles = travel * 40  # super rough guess of how far you could go in an hour
