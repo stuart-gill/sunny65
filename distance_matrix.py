@@ -1,8 +1,12 @@
-import urllib.request, urllib.parse, urllib.error
-import math
 import json
+import math
 import ssl
+import urllib.error
+import urllib.parse
+import urllib.request
+
 import polyline
+
 import config
 from sunny65_db import set_travel_time
 
@@ -70,7 +74,11 @@ def distance_matrix(zipcode, distance_filtered_locs):
         except:
             locations_json = None
 
-        if not locations_json or "status" not in locations_json or locations_json["status"] != "OK":
+        if (
+            not locations_json
+            or "status" not in locations_json
+            or locations_json["status"] != "OK"
+        ):
             print("==== Failure To Retrieve ====")
             print(data)
 

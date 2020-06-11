@@ -1,11 +1,12 @@
-import sqlite3
 import csv
+import sqlite3
+
 import numpy as np
 
 # build and initialize sqlite database of destinations
 # using csv from http://www.uscampgrounds.info/takeit.html
+# currently just western campsites
 
-# TODO: add weather column for forecast, and weather_updated column for time
 
 # READ CSV, build Camping table
 def build_campsite_database():
@@ -118,6 +119,7 @@ def set_weather_url(url, ID):
     cur.execute("""UPDATE Campsite SET weather_url = ? WHERE id = ?""", (url, ID))
     conn.commit()
 
+
 def set_weather_forecast(forecast, campsite_id):
     conn = sqlite3.connect("sunny65_db.sqlite")
     cur = conn.cursor()
@@ -129,8 +131,11 @@ def set_weather_forecast(forecast, campsite_id):
         forecast_last_updated = datetime('now')
     WHERE 
         id = ?
-        """, (forecast, campsite_id))
+        """,
+        (forecast, campsite_id),
+    )
     conn.commit()
+
 
 def get_weather_forecast(campsite_id):
     """get forecast from database if it's less than an hour old"""
@@ -144,12 +149,15 @@ def get_weather_forecast(campsite_id):
         id = ?
         AND
         (julianday('now') - julianday(forecast_last_updated))*24 < 1
-        """, (campsite_id,))
+        """,
+        (campsite_id,),
+    )
     forecast = cur.fetchone()
     if forecast:
         return forecast[0]
     else:
         return None
+
 
 def set_travel_time(origin_zipcode, campsite_id, seconds):
     conn = sqlite3.connect("sunny65_db.sqlite")
@@ -161,7 +169,8 @@ def set_travel_time(origin_zipcode, campsite_id, seconds):
         INSERT OR REPLACE INTO Travel_Time
         (zipcode_id, campsite_id, duration, last_updated)
         VALUES ( ?, ?, ?, datetime('now') )
-        """,(zipcode_id, campsite_id, seconds),
+        """,
+        (zipcode_id, campsite_id, seconds),
     )
     conn.commit()
 

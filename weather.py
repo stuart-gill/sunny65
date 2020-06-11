@@ -1,13 +1,16 @@
-import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
-from sunny65_db import set_weather_url, get_weather_forecast, set_weather_forecast
+import urllib.error
+import urllib.parse
+import urllib.request
 
+from sunny65_db import get_weather_forecast, set_weather_forecast, set_weather_url
+
+# TODO: convert from urllib to requests package
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
-
 WEATHER_SERVICE_URL = "https://api.weather.gov/points/"
 
 
@@ -58,4 +61,3 @@ def weather_forecast(lat, lng, weather_url, campsite_id):
     set_weather_forecast(forecast_json_string, campsite_id)
     forecast_dict = json.loads(forecast_json_string)
     return forecast_dict
-

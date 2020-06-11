@@ -1,12 +1,11 @@
 # TODO: improve map html output. Somehow list drive time?
 
-
 import codecs
-from geojson import geocode
-from distance_matrix import distance_matrix
-from weather import weather_forecast
-from sunny65_db import get_distance_filtered_locs
 
+from distance_matrix import distance_matrix
+from geojson import geocode
+from sunny65_db import get_distance_filtered_locs
+from weather import weather_forecast
 
 while True:
     address = input("Enter your location zipcode or address: ")
@@ -64,8 +63,8 @@ while True:
         for period in js["properties"]["periods"]:
             if period["isDaytime"]:
                 if (
-                        period["temperature"] > user_min
-                        and period["temperature"] < user_max
+                    period["temperature"] > user_min
+                    and period["temperature"] < user_max
                 ):
                     campsite["weather"].append(period)
 
@@ -75,12 +74,12 @@ while True:
     fhand.write("myData = [\n")
     count = 0
     for campsite in travel_time_filtered_campsites:
-        if len(campsite["weather"]):
+        if len(campsite["weather"]) > 0:
             # print(campsite)
             lat = campsite["lat"]
             lng = campsite["lng"]
             name = campsite["name"]
-            count = count + 1
+            count += 1
             # write js file with array of campsite names and lats
             if count > 1:
                 fhand.write(",\n")
