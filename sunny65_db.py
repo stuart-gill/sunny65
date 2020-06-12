@@ -3,10 +3,37 @@ import sqlite3
 
 import numpy as np
 
+
+class Campsite:
+    def __init__(
+        self,
+        campsite_id,
+        name,
+        lat,
+        lng,
+        state,
+        weather_url=None,
+        weather_forecast=None,
+        duration=None,
+    ):
+        super().__init__()
+        self.campsite_id = campsite_id
+        self.name = name
+        self.lat = lat
+        self.lng = lng
+        self.state = state
+        self.weather_url = weather_url
+        self.weather_forecast = weather_forecast
+        self.duration = duration
+
+    def __str__(self):
+        return "{}, {}, {}".format(self.campsite_id, self.name, self.state)
+        # return super().__str__()
+
+
 # build and initialize sqlite database of destinations
 # using csv from http://www.uscampgrounds.info/takeit.html
 # currently just western campsites
-
 
 # READ CSV, build Camping table
 def build_campsite_database():
@@ -22,7 +49,7 @@ def build_campsite_database():
         name   TEXT UNIQUE NOT NULL,
         lat    DECIMAL(9,6) NOT NULL,
         lng    DECIMAL(9,5) NOT NULL,
-        state_id INTEGER NOT NULL, 
+        state_id INTEGER NOT NULL,
         weather_url TEXT,
         weather_forecast TEXT,
         forecast_last_updated TEXT
@@ -219,24 +246,33 @@ def get_distance_filtered_locs(
 
     cur.execute(
         """
-    SELECT 
+    SELECT
         Campsite.id,
         Campsite.name,
         Campsite.lat,
         Campsite.lng,
         Campsite.weather_url,
-        duration
+        Travel_Time.duration,
+        State.name
     FROM
         Campsite
     LEFT JOIN Travel_Time ON
         Campsite.id = Travel_Time.campsite_id AND
         Travel_Time.zipcode_id = ?
+    LEFT JOIN State ON
+        Campsite.state_id = State.id
     WHERE
         Campsite.lat BETWEEN ? AND ? AND Campsite.lng BETWEEN ? AND ?
         """,
         (zipcode_id, min_lat, max_lat, min_lng, max_lng),
     )
     fetched = cur.fetchall()
+
+    # try building out class based campsite objects
+    for campsite_tuple in fetched:
+        campsite_id, name, lat, lng, weather_url, duration, state = campsite_tuple
+        campsite = Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
+        print(campsite)
     return fetched
 
 
