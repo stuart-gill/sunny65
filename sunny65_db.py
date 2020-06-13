@@ -251,9 +251,9 @@ def get_distance_filtered_locs(
         Campsite.name,
         Campsite.lat,
         Campsite.lng,
+        State.name,
         Campsite.weather_url,
-        Travel_Time.duration,
-        State.name
+        Travel_Time.duration
     FROM
         Campsite
     LEFT JOIN Travel_Time ON
@@ -269,10 +269,16 @@ def get_distance_filtered_locs(
     fetched = cur.fetchall()
 
     # try building out class based campsite objects
-    for campsite_tuple in fetched:
-        campsite_id, name, lat, lng, weather_url, duration, state = campsite_tuple
-        campsite = Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
+    campsites = [
+        Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
+        for (campsite_id, name, lat, lng, state, weather_url, duration) in fetched
+    ]
+    for campsite in campsites:
         print(campsite)
+    # for campsite_tuple in fetched:
+    #     campsite_id, name, lat, lng, weather_url, duration, state = campsite_tuple
+    #     campsite = Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
+    #     print(campsite)
     return fetched
 
 

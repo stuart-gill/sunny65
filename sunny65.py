@@ -26,7 +26,7 @@ while True:
     # Convert from tuples to dictionary
     # this is using a generator pattern (I think) idea
     # from David Beazley's powerpoint deck on Generators
-    col_names = ("ID", "name", "lat", "lng", "weather_url", "travel_time")
+    col_names = ("ID", "name", "lat", "lng", "state", "weather_url", "travel_time")
     loc_tuples = get_distance_filtered_locs(lat, lng, zipcode, est_miles)
     # print("loc_tuples ", loc_tuples)
     distance_filtered_locs = [
