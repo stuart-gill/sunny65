@@ -113,10 +113,12 @@ def build_zip_database():
             conn.commit()
 
 
-def set_weather_url(url, ID):
+def set_weather_url(url, campsite_id):
     conn = sqlite3.connect("sunny65_db.sqlite")
     cur = conn.cursor()
-    cur.execute("""UPDATE Campsite SET weather_url = ? WHERE id = ?""", (url, ID))
+    cur.execute(
+        """UPDATE Campsite SET weather_url = ? WHERE id = ?""", (url, campsite_id)
+    )
     conn.commit()
 
 
@@ -126,10 +128,10 @@ def set_weather_forecast(forecast, campsite_id):
     cur.execute(
         """
     UPDATE Campsite
-    SET 
+    SET
         weather_forecast = ?,
         forecast_last_updated = datetime('now')
-    WHERE 
+    WHERE
         id = ?
         """,
         (forecast, campsite_id),
@@ -189,8 +191,7 @@ def get_travel_time(origin_zipcode, campsite_id):
     duration = cur.fetchone()
     if duration:
         return duration[0]
-    else:
-        return None
+    return None
 
 
 def get_distance_filtered_locs(

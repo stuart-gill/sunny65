@@ -27,8 +27,13 @@ while True:
     # this is using a generator pattern (I think) idea
     # from David Beazley's powerpoint deck on Generators
     col_names = ("ID", "name", "lat", "lng", "weather_url", "travel_time")
-    loc_tuples = get_distance_filtered_locs(lat, lng, zipcode, est_miles)
-    # print("loc_tuples ", loc_tuples)
+    loc_tuples = get_distance_filtered_locs(
+        origin_lat=lat,
+        origin_lng=lng,
+        origin_zipcode=zipcode,
+        acceptable_distance=est_miles,
+    )
+    print("loc_tuples ", loc_tuples)
     distance_filtered_locs = [
         dict(zip(col_names, loc_tuple)) for loc_tuple in loc_tuples
     ]
