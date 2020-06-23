@@ -28,7 +28,9 @@ class Campsite:
 
     def __str__(self):
         return "{}, {}, {}".format(self.campsite_id, self.name, self.state)
-        # return super().__str__()
+
+    def __repr__(self):
+        return f"<Campsite({self.campsite_id}, {self.name}, {self.lat}, {self.lng}, {self.state}, {self.weather_url}, {self.weather_forecast}, {self.duration}>"
 
 
 # build and initialize sqlite database of destinations
