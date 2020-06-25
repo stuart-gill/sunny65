@@ -25,6 +25,7 @@ def weather_forecast(lat, lng, weather_url, campsite_id):
 
     if forecast_from_database:
         return json.loads(forecast_from_database)
+
     # if we don't have forecast url, get it
     if not weather_url:
         lat = str(lat)
@@ -34,5 +35,10 @@ def weather_forecast(lat, lng, weather_url, campsite_id):
         weather_url = response.json()["properties"]["forecast"]
         set_weather_url(weather_url, campsite_id)
     response = requests.get(weather_url)
-    set_weather_forecast(response.text, campsite_id)
-    return response.json()
+    if response.status_code == 200:
+        set_weather_forecast(response.text, campsite_id)
+        return response.json()
+    else:
+        print(
+            f"weather forecast retrieval failed with code {response.status_code} for campsite {campsite_id}"
+        )

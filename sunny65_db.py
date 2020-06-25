@@ -7,16 +7,15 @@ import numpy as np
 class Campsite:
     def __init__(
         self,
-        campsite_id,
-        name,
-        lat,
-        lng,
-        state,
-        weather_url=None,
-        weather_forecast=None,
-        duration=None,
+        campsite_id: int,
+        name: str,
+        lat: float,
+        lng: float,
+        state: str,
+        weather_url: str = None,
+        weather_forecast: str = None,
+        duration: int = None,
     ):
-        super().__init__()
         self.campsite_id = campsite_id
         self.name = name
         self.lat = lat
@@ -27,10 +26,10 @@ class Campsite:
         self.duration = duration
 
     def __str__(self):
-        return "{}, {}, {}".format(self.campsite_id, self.name, self.state)
+        return f"{self.campsite_id}, {self.name}, {self.state}"  # .format(self.campsite_id, self.name, self.state)
 
     def __repr__(self):
-        return f"<Campsite({self.campsite_id}, {self.name}, {self.lat}, {self.lng}, {self.state}, {self.weather_url}, {self.weather_forecast}, {self.duration}>"
+        return f"<Campsite({self.campsite_id}, '{self.name}', {self.lat}, {self.lng}, {self.state}, '{self.weather_url}', '{self.weather_forecast}', {self.duration}>"
 
 
 # build and initialize sqlite database of destinations
@@ -150,6 +149,7 @@ def set_weather_url(url, ID):
 
 
 def set_weather_forecast(forecast, campsite_id):
+    print(f"set weather run with id= {campsite_id}")
     conn = sqlite3.connect("sunny65_db.sqlite")
     cur = conn.cursor()
     cur.execute(

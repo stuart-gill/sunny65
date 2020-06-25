@@ -26,7 +26,15 @@ while True:
     # Convert from tuples to dictionary
     # this is using a generator pattern (I think) idea
     # from David Beazley's powerpoint deck on Generators
-    col_names = ("ID", "name", "lat", "lng", "state", "weather_url", "travel_time")
+    col_names = (
+        "campsite_id",
+        "name",
+        "lat",
+        "lng",
+        "state",
+        "weather_url",
+        "travel_time",
+    )
     loc_tuples = get_distance_filtered_locs(lat, lng, zipcode, est_miles)
     # print("loc_tuples ", loc_tuples)
     distance_filtered_locs = [
@@ -61,15 +69,20 @@ while True:
     user_max = int(input("What's your maximum acceptable temperature? "))
     for campsite in travel_time_filtered_campsites:
         js = weather_forecast(
-            campsite["lat"], campsite["lng"], campsite["weather_url"], campsite["ID"]
+            campsite["lat"],
+            campsite["lng"],
+            campsite["weather_url"],
+            campsite["campsite_id"],
         )
-        for period in js["properties"]["periods"]:
-            if period["isDaytime"]:
-                if (
-                    period["temperature"] > user_min
-                    and period["temperature"] < user_max
-                ):
-                    campsite["weather"].append(period)
+        # print(f"campsite js: {js}")
+        if js and "properties" in js:
+            for period in js["properties"]["periods"]:
+                if period["isDaytime"]:
+                    if (
+                        period["temperature"] > user_min
+                        and period["temperature"] < user_max
+                    ):
+                        campsite["weather"].append(period)
 
     # output acceptable weather windows at acceptable destinations
     # also create map
