@@ -20,7 +20,12 @@ class CampsiteModel(db.Model):
         self.weather_url = weather_url
 
     def json(self):
-        return {"name": self.name}
+        return {
+            "name": self.name,
+            "lat": self.lat,
+            "lng": self.lng,
+            "weather_url": self.weather_url,
+        }
 
     @classmethod
     def find_by_name(cls, name):
