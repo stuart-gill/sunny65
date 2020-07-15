@@ -12,13 +12,10 @@ from models.campsite import CampsiteModel
 class Campsite(Resource):
 
     parser = reqparse.RequestParser()
-    parser.add_argument(
-        "lat", type=float)
-    parser.add_argument(
-        "lng", type=float)
-    parser.add_argument(
-        "weather_url", type=str)
-
+    parser.add_argument("lat", type=float)
+    parser.add_argument("lng", type=float)
+    parser.add_argument("weather_url", type=str)
+    parser.add_argument("weather_forecast", type=str)
 
     # @jwt_required()
     def get(self, name):
@@ -32,12 +29,21 @@ class Campsite(Resource):
             return {"message": f"an campsite with name {name} already exists"}, 400
 
         data = Campsite.parser.parse_args()
-        campsite = CampsiteModel(name, data["lat"], data["lng"], data["weather_url"])
+        campsite = CampsiteModel(
+            name,
+            data["lat"],
+            data["lng"],
+            data["weather_url"],
+            data["weather_forecast"],
+        )
 
         try:
             campsite.upsert()
         except:
-            return {"message": "an error occured while trying to post the campsite"}, 500
+            return (
+                {"message": "an error occured while trying to post the campsite"},
+                500,
+            )
 
         # note: we always have to return json
         return campsite.json(), 201
@@ -77,7 +83,9 @@ class Campsite(Resource):
 
 class CampsiteList(Resource):
     def get(self):
-        return {"campsites": [campsite.json() for campsite in CampsiteModel.query.all()]}
+        return {
+            "campsites": [campsite.json() for campsite in CampsiteModel.query.all()]
+        }
 
         # connection = sqlite3.connect("data.db")
         # cursor = connection.cursor()

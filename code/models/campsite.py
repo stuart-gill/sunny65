@@ -9,15 +9,17 @@ class CampsiteModel(db.Model):
     lat = db.Column(db.Float(precision=3))
     lng = db.Column(db.Float(precision=3))
     weather_url = db.Column(db.String)
+    weather_forecast = db.Column(db.String)
 
     # state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     # state = db.relationship("StateModel")  # hooks items and stores tables together
 
-    def __init__(self, name, lat, lng, weather_url=None):
+    def __init__(self, name, lat, lng, weather_url=None, weather_forecast=None):
         self.name = name
         self.lat = lat
         self.lng = lng
         self.weather_url = weather_url
+        self.weather_forecast = weather_forecast
 
     def json(self):
         return {
@@ -25,6 +27,7 @@ class CampsiteModel(db.Model):
             "lat": self.lat,
             "lng": self.lng,
             "weather_url": self.weather_url,
+            "weather_forecast": self.weather_forecast,
         }
 
     @classmethod
