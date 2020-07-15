@@ -8,6 +8,7 @@ class TravelTime(Resource):
     parser.add_argument("zipcode_id", type=int)
     parser.add_argument("campsite_id", type=int)
     parser.add_argument("duration", type=int)
+    parser.add_argument("willing_travel_time", type=int)
 
     def post(self):
         data = TravelTime.parser.parse_args()

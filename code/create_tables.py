@@ -74,36 +74,31 @@ def build_campsite_database():
             )
 
             conn.commit()
+    conn.close()
+    print("campsites database built, connection closed")
 
 
 def build_zip_database():
-    conn = sqlite3.connect("sunny65_db.sqlite")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
     cur.executescript(
         """
-    DROP TABLE IF EXISTS Zipcode;
-    DROP TABLE IF EXISTS Travel_Time;
+    DROP TABLE IF EXISTS zipcodes;
 
-    CREATE TABLE Zipcode (
+    CREATE TABLE zipcodes (
         id     INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         zipcode    INTEGER UNIQUE NOT NULL,
         lat    DECIMAL(9,6) NOT NULL,
         lng    DECIMAL(9,5) NOT NULL
     );
 
-    CREATE TABLE Travel_Time (
-        zipcode_id    INTEGER,
-        campsite_id   INTEGER,
-        duration      INTEGER,
-        last_updated  TEXT,
-        PRIMARY KEY (zipcode_id, campsite_id)
-    );
     """
     )
 
-    fname = input("Enter file name, or hit enter for default: ")
+    default_fname = "us-zip-code-latitude-and-longitude.csv"
+    fname = input(f"Enter file name, or hit enter for default {default_fname}: ")
     if len(fname) < 1:
-        fname = "us-zip-code-latitude-and-longitude.csv"
+        fname = default_fname
 
     # str_data = open(fname).read()
     # json_data = json.loads(str_data)
@@ -116,12 +111,14 @@ def build_zip_database():
             lng = row[4]
 
             cur.execute(
-                """INSERT OR IGNORE INTO Zipcode (zipcode, lat, lng)
+                """INSERT OR IGNORE INTO zipcodes (zipcode, lat, lng)
             VALUES ( ?, ?, ?)""",
                 (zipcode, lat, lng),
             )
 
             conn.commit()
+    conn.close()
+    print("zipcodes database built, connection closed")
 
 
 def set_weather_url(url, ID):
@@ -270,7 +267,7 @@ def get_distance_filtered_locs(
 database_build = input("do you want to rebuild databases? y/n: \n")
 if database_build == "y":
     build_campsite_database()
-    #   build_zip_database()
+    build_zip_database()
     print("Databases built")
 
 # set_weather_forecast("it's gonna rain", 1)

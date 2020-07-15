@@ -6,8 +6,8 @@ class CampsiteModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
-    lat = db.Column(db.Float(precision=3))
-    lng = db.Column(db.Float(precision=3))
+    lat = db.Column(db.Float(precision=6))
+    lng = db.Column(db.Float(precision=5))
     weather_url = db.Column(db.String)
     weather_forecast = db.Column(db.String)
 

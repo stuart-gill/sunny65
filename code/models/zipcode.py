@@ -6,8 +6,8 @@ class ZipcodeModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     zipcode = db.Column(db.Integer)
-    lat = db.Column(db.Float(precision=3))
-    lng = db.Column(db.Float(precision=3))
+    lat = db.Column(db.Float(precision=6))
+    lng = db.Column(db.Float(precision=5))
 
     campsites = db.relationship("CampsiteModel", secondary="travel_time")
 
