@@ -27,7 +27,9 @@ class TravelTimeModel(db.Model):
     @classmethod
     def find_by_ids(cls, zipcode_id, campsite_id):
 
-        return cls.query.filter_by(zipcode_id=zipcode_id, campsite_id=campsite_id)
+        return cls.query.filter_by(
+            zipcode_id=zipcode_id, campsite_id=campsite_id
+        ).first()
 
         # connection = sqlite3.connect("data.db")
         # cursor = connection.cursor()
@@ -47,4 +49,11 @@ class TravelTimeModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+    def json(self):
+        return {
+            "zipcode_id": self.zipcode_id,
+            "campsite_id": self.campsite_id,
+            "duration": self.duration,
+        }
 
