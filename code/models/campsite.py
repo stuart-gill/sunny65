@@ -11,6 +11,8 @@ class CampsiteModel(db.Model):
     weather_url = db.Column(db.String)
     weather_forecast = db.Column(db.String)
 
+    zipcodes = db.relationship("ZipcodeModel", secondary="travel_time")
+
     # state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     # state = db.relationship("StateModel")  # hooks items and stores tables together
 

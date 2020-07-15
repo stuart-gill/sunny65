@@ -9,6 +9,8 @@ class ZipcodeModel(db.Model):
     lat = db.Column(db.Float(precision=3))
     lng = db.Column(db.Float(precision=3))
 
+    campsites = db.relationship("CampsiteModel", secondary="travel_time")
+
     # items = db.relationship(
     #     "ItemModel", lazy="dynamic"
     # )  # back references storeid foreign key in ItemModel. Knows that this is a list (one to many)

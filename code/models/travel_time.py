@@ -1,5 +1,7 @@
 import sqlite3
 from db import db
+from models.zipcode import ZipcodeModel
+from models.campsite import CampsiteModel
 
 # user is in models instead of resources because there are no API endpoints for User information
 # model is the internal representation, resource is the external representation
@@ -14,6 +16,13 @@ class TravelTimeModel(db.Model):
     zipcode_id = db.Column(db.Integer, db.ForeignKey("zipcodes.id"))
     campsite_id = db.Column(db.Integer, db.ForeignKey("campsites.id"))
     duration = db.Column(db.Integer)
+
+    zipcode = db.relationship(
+        ZipcodeModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+    )
+    campsite = db.relationship(
+        CampsiteModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+    )
 
     # username = db.Column(db.String(80))
     # password = db.Column(db.String(80))
