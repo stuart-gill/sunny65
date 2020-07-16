@@ -6,7 +6,7 @@ from security import authenticate, identity
 from resources.user import UserRegister
 from resources.campsite import Campsite, CampsiteList
 from resources.zipcode import Zipcode, ZipcodeList
-from resources.travel_time import TravelTime, TravelTimeList
+from resources.travel_time import TravelTime, TravelTimeList, TravelTimeByZipList
 from db import db
 
 app = Flask(__name__)
@@ -28,10 +28,11 @@ jwt = JWT(
 
 api.add_resource(Zipcode, "/zipcode/<string:name>")
 api.add_resource(Campsite, "/campsite/<string:name>")
-api.add_resource(CampsiteList, "/campsites")
+api.add_resource(CampsiteList, "/campsites/all")
 api.add_resource(ZipcodeList, "/zipcodes")
 api.add_resource(TravelTime, "/traveltime")
 api.add_resource(TravelTimeList, "/traveltimes")
+api.add_resource(TravelTimeByZipList, "/traveltimes/<int:zipcode_id>")
 
 api.add_resource(UserRegister, "/register")
 

@@ -40,6 +40,12 @@ class TravelTimeModel(db.Model):
             zipcode_id=zipcode_id, campsite_id=campsite_id
         ).first()
 
+    @classmethod
+    def find_campsites_by_duration(cls, zipcode_id, willing_duration):
+        return cls.query.filter_by(zipcode_id=zipcode_id).filter(
+            cls.duration < willing_duration
+        )
+
         # connection = sqlite3.connect("data.db")
         # cursor = connection.cursor()
 

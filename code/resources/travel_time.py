@@ -21,9 +21,26 @@ class TravelTime(Resource):
         try:
             travel_time.save_to_db()
         except:
-            return {"message": "an error occured while creating the zipcode"}, 500
+            return {"message": "an error occured while creating the travel time"}, 500
 
         return travel_time.json(), 201
+
+
+class TravelTimeByZipList(Resource):
+
+    parser = reqparse.RequestParser()
+    parser.add_argument("willing_travel_time", type=int)
+
+    def get(self, zipcode_id):
+        data = TravelTimeByZipList.parser.parse_args()
+        return {
+            "travel_times": [
+                travel_time.json()
+                for travel_time in TravelTimeModel.find_campsites_by_duration(
+                    zipcode_id, data["willing_travel_time"]
+                )
+            ]
+        }
 
 
 class TravelTimeList(Resource):
@@ -33,3 +50,4 @@ class TravelTimeList(Resource):
                 travel_time.json() for travel_time in TravelTimeModel.query.all()
             ]
         }
+

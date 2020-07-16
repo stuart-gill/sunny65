@@ -21,7 +21,12 @@ class ZipcodeModel(db.Model):
         self.lng = lng
 
     def json(self):
-        return {"zipcode": self.zipcode, "lat": self.lat, "lng": self.lng}
+        return {
+            "zipcode": self.zipcode,
+            "lat": self.lat,
+            "lng": self.lng,
+            "campsites": [campsite.json() for campsite in self.campsites],
+        }
         # "items": [item.json() for item in self.items.all()],
         # lazy=dynamic and .all() here means items list will get created only when json() method is called
 
