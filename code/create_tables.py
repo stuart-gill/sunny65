@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 
-# import numpy as np
+import numpy as np
 
 
 class Campsite:
@@ -176,8 +176,8 @@ def set_travel_time(origin_zipcode, campsite_id, seconds):
     cur.execute(
         """
         INSERT OR REPLACE INTO Travel_Time
-        (zipcode_id, campsite_id, duration, last_updated)
-        VALUES ( ?, ?, ?, datetime('now') )
+        (zipcode_id, campsite_id, duration)
+        VALUES ( ?, ?, ? )
         """,
         (zipcode_id, campsite_id, seconds),
     )
@@ -202,18 +202,21 @@ def get_travel_time(origin_zipcode, campsite_id):
         return None
 
 
-def get_distance_filtered_locs(
-    origin_lat, origin_lng, origin_zipcode, acceptable_distance
-):
+def get_distance_filtered_locs(origin_zipcode, acceptable_distance):
     """Fetches campsites that are within a certain radius of the origin lat/long
     also adds duration column, with travel duration in seconds from origin_zipcode to each campsite,
      which may or may not be in database"""
 
-    conn = sqlite3.connect("sunny65_db.sqlite")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT id FROM Zipcode WHERE zipcode = ? ", (origin_zipcode,))
-    zipcode_id = cur.fetchone()[0]
+    cur.execute(
+        "SELECT id, lat, lng FROM zipcodes WHERE zipcode = ? ", (origin_zipcode,)
+    )
+    zipcode_id, origin_lat, origin_lng = cur.fetchone()
+    # zipcode_id = cur.fetchone()[0]
+    # origin_lat = cur.fetchone()[1]
+    # origin_lng = cur.fetchone()[2]
 
     EARTH_RADIUS = 3960
     max_lat = origin_lat + np.rad2deg(acceptable_distance / EARTH_RADIUS)
@@ -229,47 +232,45 @@ def get_distance_filtered_locs(
     cur.execute(
         """
     SELECT
-        Campsite.id,
-        Campsite.name,
-        Campsite.lat,
-        Campsite.lng,
-        State.name,
-        Campsite.weather_url,
-        Travel_Time.duration
+        campsites.id,
+        campsites.name,
+        campsites.lat,
+        campsites.lng,
+        campsites.weather_url,
+        travel_time.duration
     FROM
-        Campsite
-    LEFT JOIN Travel_Time ON
-        Campsite.id = Travel_Time.campsite_id AND
-        Travel_Time.zipcode_id = ?
-    LEFT JOIN State ON
-        Campsite.state_id = State.id
+        campsites
+    LEFT JOIN travel_time ON
+        campsites.id = travel_time.campsite_id AND
+        travel_time.zipcode_id = ?
     WHERE
-        Campsite.lat BETWEEN ? AND ? AND Campsite.lng BETWEEN ? AND ?
+        campsites.lat BETWEEN ? AND ? AND campsites.lng BETWEEN ? AND ?
         """,
         (zipcode_id, min_lat, max_lat, min_lng, max_lng),
     )
     fetched = cur.fetchall()
 
     # try building out class based campsite objects
-    campsites = [
-        Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
-        for (campsite_id, name, lat, lng, state, weather_url, duration) in fetched
-    ]
-    for campsite in campsites:
-        print(campsite)
+    # campsites = [
+    #     Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
+    #     for (campsite_id, name, lat, lng, state, weather_url, duration) in fetched
+    # ]
+    # for campsite in campsites:
+    #     print(campsite)
     # for campsite_tuple in fetched:
     #     campsite_id, name, lat, lng, weather_url, duration, state = campsite_tuple
     #     campsite = Campsite(campsite_id, name, lat, lng, state, weather_url, duration)
     #     print(campsite)
+    print("fetched: ", fetched)
     return fetched
 
 
-database_build = input("do you want to rebuild databases? y/n: \n")
-if database_build == "y":
-    build_campsite_database()
-    build_zip_database()
-    print("Databases built")
+# database_build = input("do you want to rebuild databases? y/n: \n")
+# if database_build == "y":
+#     build_campsite_database()
+#     build_zip_database()
+#     print("Databases built")
 
-# set_weather_forecast("it's gonna rain", 1)
-# print(get_weather_forecast('1'))
+
+get_distance_filtered_locs(98122, 20)
 

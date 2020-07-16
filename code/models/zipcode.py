@@ -5,7 +5,7 @@ class ZipcodeModel(db.Model):
     __tablename__ = "zipcodes"
 
     id = db.Column(db.Integer, primary_key=True)
-    zipcode = db.Column(db.Integer)
+    zipcode = db.Column(db.String)
     lat = db.Column(db.Float(precision=6))
     lng = db.Column(db.Float(precision=5))
 
@@ -31,9 +31,12 @@ class ZipcodeModel(db.Model):
         # lazy=dynamic and .all() here means items list will get created only when json() method is called
 
     @classmethod
-    def find_by_name(cls, zipcode):
-        # this line replaces everything below
+    def find_by_zipcode(cls, zipcode):
         return cls.query.filter_by(zipcode=zipcode).first()
+
+    @classmethod
+    def find_by_id(cls, _id):
+        return cls.query.filter_by(id=_id).first()
 
     def save_to_db(self):
         db.session.add(self)

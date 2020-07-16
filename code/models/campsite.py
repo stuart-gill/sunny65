@@ -52,7 +52,7 @@ class CampsiteModel(db.Model):
 
     @classmethod
     def find_by_id(cls, _id):
-        return cls.query.filter_by(id=_id)
+        return cls.query.filter_by(id=_id).first()
 
     def upsert(self):  # works for both insert and update functions
         db.session.add(self)

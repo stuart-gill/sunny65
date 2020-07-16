@@ -25,19 +25,38 @@ class TravelTime(Resource):
 
         return travel_time.json(), 201
 
+    def put(self):
+        data = TravelTime.parser.parse_args()
+        travel_time = TravelTimeModel.find_by_ids(
+            data["zipcode_id"], data["campsite_id"]
+        )
+        if travel_time:
+            travel_time.duration = data["duration"]
+        else:
+            travel_time = TravelTimeModel(
+                data["zipcode_id"], data["campsite_id"], data["duration"]
+            )
+        try:
+            travel_time.save_to_db()
+        except:
+            return {"message": "an error occured while updating the travel time"}, 500
+
+        return travel_time.json(), 201
+
 
 class TravelTimeByZipList(Resource):
 
     parser = reqparse.RequestParser()
     parser.add_argument("willing_travel_time", type=int)
 
-    def get(self, zipcode_id):
+    def get(self, zipcode):
         data = TravelTimeByZipList.parser.parse_args()
+
         return {
             "travel_times": [
                 travel_time.json()
                 for travel_time in TravelTimeModel.find_campsites_by_duration(
-                    zipcode_id, data["willing_travel_time"]
+                    zipcode, data["willing_travel_time"]
                 )
             ]
         }

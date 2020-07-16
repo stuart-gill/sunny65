@@ -8,18 +8,18 @@ class Zipcode(Resource):
     parser.add_argument("lat", type=float)
     parser.add_argument("lng", type=float)
 
-    def get(self, name):
-        zipcode = ZipcodeModel.find_by_name(name)
+    def get(self, zipcode):
+        zipcode = ZipcodeModel.find_by_zipcode(zipcode)
         if zipcode:
             return zipcode.json()
         return {"message": "zipcode not found"}, 404
 
-    def post(self, name):
-        if ZipcodeModel.find_by_name(name):
-            return {"message": f"a zipcode with the name '{name}' already exists"}, 400
+    def post(self, zipcode):
+        if ZipcodeModel.find_by_zipcode(zipcode):
+            return {"message": f"a zipcode '{zipcode}' already exists"}, 400
 
         data = Zipcode.parser.parse_args()
-        zipcode = ZipcodeModel(name, data["lat"], data["lng"])
+        zipcode = ZipcodeModel(zipcode, data["lat"], data["lng"])
         try:
             zipcode.save_to_db()
         except:
@@ -27,11 +27,11 @@ class Zipcode(Resource):
 
         return zipcode.json(), 201
 
-    def put(self, name):
+    def put(self, zipcode):
 
         data = Zipcode.parser.parse_args()
 
-        zipcode = ZipcodeModel.find_by_name(name)
+        zipcode = ZipcodeModel.find_by_zipcode(zipcode)
 
         if zipcode:
             try:
@@ -41,19 +41,19 @@ class Zipcode(Resource):
                 return {"message": "an error occurred updating the zipcode"}, 500
         else:
             try:
-                zipcode = ZipcodeModel(name, data["lat"], data["lng"])
+                zipcode = ZipcodeModel(zipcode, data["lat"], data["lng"])
                 zipcode.save_to_db()
             except:
                 return {"message": "an error occured inserting the zipcode"}, 500
         zipcode.save_to_db()
         return zipcode.json()
 
-    def delete(self, name):
-        zipcode = ZipcodeModel.find_by_name(name)
+    def delete(self, zipcode):
+        zipcode = ZipcodeModel.find_by_zipcode(zipcode)
         if zipcode:
             zipcode.delete_from_db()
             return {"message": "zipcode deleted"}
-        return {"message": "a zipcode with that name could not be found"}
+        return {"message": f"a zipcode {zipcode} could not be found"}
 
 
 class ZipcodeList(Resource):

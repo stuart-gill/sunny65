@@ -24,9 +24,6 @@ class TravelTimeModel(db.Model):
         CampsiteModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
     )
 
-    # username = db.Column(db.String(80))
-    # password = db.Column(db.String(80))
-
     # leave id off object creation since DB autoincrements it... we should never be entering an ID
     def __init__(self, zipcode_id, campsite_id, duration):
         self.zipcode_id = zipcode_id
@@ -41,25 +38,29 @@ class TravelTimeModel(db.Model):
         ).first()
 
     @classmethod
-    def find_campsites_by_duration(cls, zipcode_id, willing_duration):
+    def find_campsites_by_duration(cls, zipcode, willing_duration):
+        zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
         return cls.query.filter_by(zipcode_id=zipcode_id).filter(
             cls.duration < willing_duration
         )
 
-        # connection = sqlite3.connect("data.db")
-        # cursor = connection.cursor()
+    # @classmethod
+    # def add_campsites_within_5_hours(cls, zipcode, willing_duration):
 
-        # query = "SELECT * FROM users WHERE username=?"
-        # result = cursor.execute(query, (username,))
-        # row = result.fetchone()
-        # # *row passes the three arguments in row as a set, which will expand to the three init arguments to User class
-        # if row:
-        #     user = cls(*row)
-        # else:
-        #     user = None
+    # connection = sqlite3.connect("data.db")
+    # cursor = connection.cursor()
 
-        # connection.close()
-        # return user
+    # query = "SELECT * FROM users WHERE username=?"
+    # result = cursor.execute(query, (username,))
+    # row = result.fetchone()
+    # # *row passes the three arguments in row as a set, which will expand to the three init arguments to User class
+    # if row:
+    #     user = cls(*row)
+    # else:
+    #     user = None
+
+    # connection.close()
+    # return user
 
     def save_to_db(self):
         db.session.add(self)
@@ -68,7 +69,9 @@ class TravelTimeModel(db.Model):
     def json(self):
         return {
             "zipcode_id": self.zipcode_id,
+            "zipcode": ZipcodeModel.find_by_id(self.zipcode_id).zipcode,
             "campsite_id": self.campsite_id,
-            "duration": self.duration,
+            "campsite_name": CampsiteModel.find_by_id(self.campsite_id).name,
+            "travel_time": self.duration,
         }
 
