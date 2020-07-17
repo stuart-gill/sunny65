@@ -2,6 +2,7 @@ import sqlite3
 from db import db
 from models.zipcode import ZipcodeModel
 from models.campsite import CampsiteModel
+import config
 
 import requests
 
@@ -54,7 +55,7 @@ class TravelTimeModel(db.Model):
         origin_lat, origin_lng = zipcode.lat, zipcode.lng
         destination_lat, destination_lng = campsite.lat, campsite.lng
 
-        api_key = "AIzaSyCxxayDEdRPYitXNH2GV9WFTuFH8e96smk"  # config.GMAPS_API_KEY
+        api_key = config.GMAPS_API_KEY
         serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
         params = {
