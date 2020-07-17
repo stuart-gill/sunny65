@@ -4,7 +4,7 @@ from flask_jwt import JWT
 
 from security import authenticate, identity
 from resources.user import UserRegister
-from resources.campsite import Campsite, CampsiteList
+from resources.campsite import Campsite, CampsiteList, CampsiteByZipList
 from resources.zipcode import Zipcode, ZipcodeList
 from resources.travel_time import TravelTime, TravelTimeList, TravelTimeByZipList
 from db import db
@@ -33,7 +33,7 @@ api.add_resource(ZipcodeList, "/zipcodes")
 api.add_resource(TravelTime, "/traveltime")
 api.add_resource(TravelTimeList, "/traveltimes")
 api.add_resource(TravelTimeByZipList, "/traveltimes/<string:zipcode>")
-
+api.add_resource(CampsiteByZipList, "/campsites/<string:zipcode>")
 api.add_resource(UserRegister, "/register")
 
 

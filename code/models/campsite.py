@@ -1,4 +1,6 @@
 from db import db
+from models.zipcode import ZipcodeModel
+import numpy as np
 
 
 class CampsiteModel(db.Model):
@@ -53,6 +55,28 @@ class CampsiteModel(db.Model):
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_distance_as_crow_flies(cls, origin_zipcode, acceptable_distance):
+
+        zipcode = ZipcodeModel.find_by_zipcode(origin_zipcode)
+        origin_lat = zipcode.lat
+        origin_lng = zipcode.lng
+
+        EARTH_RADIUS = 3960
+        max_lat = origin_lat + np.rad2deg(acceptable_distance / EARTH_RADIUS)
+        min_lat = origin_lat - np.rad2deg(acceptable_distance / EARTH_RADIUS)
+
+        max_lng = origin_lng + np.rad2deg(
+            acceptable_distance / EARTH_RADIUS / np.cos(np.deg2rad(origin_lat))
+        )
+        min_lng = origin_lng - np.rad2deg(
+            acceptable_distance / EARTH_RADIUS / np.cos(np.deg2rad(origin_lat))
+        )
+
+        return cls.query.filter(
+            cls.lat > min_lat, cls.lat < max_lat, cls.lng > min_lng, cls.lng < max_lng
+        ).all()
 
     def upsert(self):  # works for both insert and update functions
         db.session.add(self)

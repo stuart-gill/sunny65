@@ -87,16 +87,15 @@ class CampsiteList(Resource):
             "campsites": [campsite.json() for campsite in CampsiteModel.query.all()]
         }
 
-        # connection = sqlite3.connect("data.db")
-        # cursor = connection.cursor()
 
-        # query = "SELECT * FROM campsites"
-        # result = cursor.execute(query)
+class CampsiteByZipList(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument("acceptable_distance", type=float)
 
-        # campsites = []
+    def post(self, zipcode):
+        data = CampsiteByZipList.parser.parse_args()
+        campsites = CampsiteModel.find_by_distance_as_crow_flies(
+            zipcode, data["acceptable_distance"]
+        )
+        return {"campsites": [campsite.json() for campsite in campsites]}
 
-        # for row in result:
-        #     campsites.append({"name": row[1], "price": row[2]})
-        # connection.close()
-
-        # return {"campsites": campsites}
