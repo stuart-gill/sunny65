@@ -3,6 +3,9 @@ from db import db
 from models.zipcode import ZipcodeModel
 from models.campsite import CampsiteModel
 
+import requests
+
+
 # user is in models instead of resources because there are no API endpoints for User information
 # model is the internal representation, resource is the external representation
 
@@ -43,6 +46,26 @@ class TravelTimeModel(db.Model):
         return cls.query.filter_by(zipcode_id=zipcode_id).filter(
             cls.duration < willing_duration
         )
+
+    @classmethod
+    def get_duration_from_google(cls, zipcode_id, campsite_id):
+        zipcode = ZipcodeModel.find_by_id(zipcode_id)
+        campsite = CampsiteModel.find_by_id(campsite_id)
+        origin_lat, origin_lng = zipcode.lat, zipcode.lng
+        destination_lat, destination_lng = campsite.lat, campsite.lng
+
+        api_key = "AIzaSyCxxayDEdRPYitXNH2GV9WFTuFH8e96smk"  # config.GMAPS_API_KEY
+        serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
+
+        params = {
+            "origins": f"{origin_lat},{origin_lng}",
+            "destinations": f"{destination_lat},{destination_lng}",
+            "key": api_key,
+        }
+        response = requests.get(serviceurl, params=params)
+        js = response.json()
+        duration = js["rows"][0]["elements"][0]["duration"]["value"]
+        return duration
 
     # @classmethod
     # def add_campsites_within_5_hours(cls, zipcode, willing_duration):

@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from models.travel_time import TravelTimeModel
+from models.zipcode import ZipcodeModel
 
 
 class TravelTime(Resource):
@@ -9,15 +10,32 @@ class TravelTime(Resource):
     parser.add_argument("campsite_id", type=int)
     parser.add_argument("duration", type=int)
     parser.add_argument("willing_travel_time", type=int)
+    parser.add_argument("zipcode", type=str)
+
+    def get(self):
+        data = TravelTime.parser.parse_args()
+        return {
+            "duration": TravelTimeModel.get_duration_from_google(
+                data["zipcode"], data["campsite_id"]
+            )
+        }
 
     def post(self):
         data = TravelTime.parser.parse_args()
         if TravelTimeModel.find_by_ids(data["zipcode_id"], data["campsite_id"]):
             return {"message": f"this travel time already exists"}, 400
 
-        travel_time = TravelTimeModel(
-            data["zipcode_id"], data["campsite_id"], data["duration"]
-        )
+        if data["duration"]:
+            travel_time = TravelTimeModel(
+                data["zipcode_id"], data["campsite_id"], data["duration"]
+            )
+        else:
+            duration = TravelTimeModel.get_duration_from_google(
+                data["zipcode_id"], data["campsite_id"]
+            )
+            travel_time = TravelTimeModel(
+                data["zipcode_id"], data["campsite_id"], duration
+            )
         try:
             travel_time.save_to_db()
         except:
