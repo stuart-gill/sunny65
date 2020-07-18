@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.travel_time import TravelTimeModel
 from models.zipcode import ZipcodeModel
+from models.campsite import CampsiteModel
 
 
 class TravelTime(Resource):
@@ -12,13 +13,13 @@ class TravelTime(Resource):
     parser.add_argument("willing_travel_time", type=int)
     parser.add_argument("zipcode", type=str)
 
-    def get(self):
-        data = TravelTime.parser.parse_args()
-        return {
-            "duration": TravelTimeModel.get_duration_from_google(
-                data["zipcode"], data["campsite_id"]
-            )
-        }
+    # def get(self):
+    #     data = TravelTime.parser.parse_args()
+    #     return {
+    #         "duration": TravelTimeModel.get_duration_from_google(
+    #             data["zipcode"], data["campsite_id"]
+    #         )
+    #     }
 
     def post(self):
         data = TravelTime.parser.parse_args()
@@ -30,9 +31,18 @@ class TravelTime(Resource):
                 data["zipcode_id"], data["campsite_id"], data["duration"]
             )
         else:
-            duration = TravelTimeModel.get_duration_from_google(
-                data["zipcode_id"], data["campsite_id"]
-            )
+            try:
+                duration = TravelTimeModel.get_duration_from_google(
+                    data["zipcode_id"], data["campsite_id"]
+                )
+            except:
+                return (
+                    {
+                        "message": "an error occured retrieving travel time from distance matrix api"
+                    },
+                    500,
+                )
+
             travel_time = TravelTimeModel(
                 data["zipcode_id"], data["campsite_id"], duration
             )
@@ -78,6 +88,20 @@ class TravelTimeByZipList(Resource):
                 )
             ]
         }
+
+    def post(self, zipcode):
+        zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
+        campsites = CampsiteModel.find_by_distance_as_crow_flies(zipcode, 240)
+        for campsite in campsites:
+            try:
+                duration = TravelTimeModel.get_duration_from_google(
+                    zipcode_id, campsite.id
+                )
+            except:
+                duration = -1
+            travel_time = TravelTimeModel(zipcode_id, campsite.id, duration)
+            travel_time.save_to_db()
+        return {"message": "travel times inserted"}
 
 
 class TravelTimeList(Resource):
