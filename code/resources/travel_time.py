@@ -13,15 +13,24 @@ class TravelTime(Resource):
     parser.add_argument("willing_travel_time", type=int)
     parser.add_argument("zipcode", type=str)
 
-    # def get(self):
-    #     data = TravelTime.parser.parse_args()
-    #     return {
-    #         "duration": TravelTimeModel.get_duration_from_google(
-    #             data["zipcode"], data["campsite_id"]
-    #         )
-    #     }
+    def get(self):
+        """
+        Get travel time between one zipcode id and campsite id
+        """
+
+        data = TravelTime.parser.parse_args()
+        return {
+            "duration": TravelTimeModel.get_duration_from_google(
+                data["zipcode_id"], data["campsite_id"]
+            )
+        }
 
     def post(self):
+        """
+        Post travel time between one zipcode id and one campsite id. If request body doesn't contain travel duration, 
+        we'll find out the travel duration from google matrix api and use that.
+        """
+
         data = TravelTime.parser.parse_args()
         if TravelTimeModel.find_by_ids(data["zipcode_id"], data["campsite_id"]):
             return {"message": f"this travel time already exists"}, 400
@@ -54,6 +63,10 @@ class TravelTime(Resource):
         return travel_time.json(), 201
 
     def put(self):
+        """
+        Update or post if not in database already. Requires duration in request body.
+        """
+
         data = TravelTime.parser.parse_args()
         travel_time = TravelTimeModel.find_by_ids(
             data["zipcode_id"], data["campsite_id"]
@@ -78,18 +91,24 @@ class TravelTimeByZipList(Resource):
     parser.add_argument("willing_travel_time", type=int)
 
     def get(self, zipcode):
+        """
+        Get a list of travel times from origin zipcode that are under the willing travel time
+        """
+
         data = TravelTimeByZipList.parser.parse_args()
+        travel_times = TravelTimeModel.find_campsites_by_duration(
+            zipcode, data["willing_travel_time"]
+        )
 
         return {
-            "travel_times": [
-                travel_time.json()
-                for travel_time in TravelTimeModel.find_campsites_by_duration(
-                    zipcode, data["willing_travel_time"]
-                )
-            ]
+            "count": len(travel_times),
+            "travel_times": [travel_time.json() for travel_time in travel_times],
         }
 
     def post(self, zipcode):
+        """
+        From origin zipcode, get a list of distance appropriate campsites, then use google distance matrix to calculate travel times between zipcode and each campsite. Save each to the db. Unclear to me whether calling this will overwrite existing travel_times or not. It does not seem to create duplicates. 
+        """
         zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
         campsites = CampsiteModel.find_by_distance_as_crow_flies(zipcode, 240)
         for campsite in campsites:
@@ -106,9 +125,12 @@ class TravelTimeByZipList(Resource):
 
 class TravelTimeList(Resource):
     def get(self):
+        """
+        List all travel times in database
+        """
+        travel_times = TravelTimeModel.query.all()
         return {
-            "travel_times": [
-                travel_time.json() for travel_time in TravelTimeModel.query.all()
-            ]
+            "count": len(travel_times),
+            "travel_times": [travel_time.json() for travel_time in travel_times],
         }
 

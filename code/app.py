@@ -7,6 +7,7 @@ from resources.user import UserRegister
 from resources.campsite import Campsite, CampsiteList, CampsiteByZipList
 from resources.zipcode import Zipcode, ZipcodeList
 from resources.travel_time import TravelTime, TravelTimeList, TravelTimeByZipList
+from resources.weather_forecast import WeatherForecastList, WeatherForecastForCampsite
 from db import db
 
 app = Flask(__name__)
@@ -35,6 +36,8 @@ api.add_resource(TravelTimeList, "/traveltimes")
 api.add_resource(TravelTimeByZipList, "/traveltimes/<string:zipcode>")
 api.add_resource(CampsiteByZipList, "/campsites/<string:zipcode>")
 api.add_resource(UserRegister, "/register")
+api.add_resource(WeatherForecastList, "/forecasts/all")
+api.add_resource(WeatherForecastForCampsite, "/forecast/<int:campsite_id>")
 
 
 # conditional ensures that app is only run when we run app.py, and not if/when we import it to another file

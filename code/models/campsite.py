@@ -1,6 +1,8 @@
 from db import db
 from models.zipcode import ZipcodeModel
 import numpy as np
+import requests
+from pprint import pprint
 
 
 class CampsiteModel(db.Model):
@@ -28,6 +30,7 @@ class CampsiteModel(db.Model):
     def json(self):
         return {
             "name": self.name,
+            "id": self.id,
             "lat": self.lat,
             "lng": self.lng,
             "weather_url": self.weather_url,
@@ -41,23 +44,15 @@ class CampsiteModel(db.Model):
             name=name
         ).first()  # gets first row, converts row to ItemModel object and returns that. Query is part of sqlalchemy
 
-        # connection = sqlite3.connect("data.db")
-        # cursor = connection.cursor()
-
-        # query = "SELECT * FROM items WHERE name = ?"
-        # result = cursor.execute(query, (name,))
-        # row = result.fetchone()
-        # connection.close()
-
-        # if row:
-        #     return cls(name=row[1], price=row[2])
-
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
     def find_by_distance_as_crow_flies(cls, origin_zipcode, acceptable_distance):
+        """
+        Get a list of all campsites within acceptable_distance of zipcode, as the crow flies
+        """
 
         zipcode = ZipcodeModel.find_by_zipcode(origin_zipcode)
         origin_lat = zipcode.lat
@@ -78,26 +73,32 @@ class CampsiteModel(db.Model):
             cls.lat > min_lat, cls.lat < max_lat, cls.lng > min_lng, cls.lng < max_lng
         ).all()
 
-    def upsert(self):  # works for both insert and update functions
+    def get_weather_url(self):
+        lat, lng = str(self.lat), str(self.lng)
+        url = "https://api.weather.gov/points/" + lat + "," + lng
+        response = requests.get(url)
+        # pprint(response.json())
+        try:
+            forecast_url = response.json()["properties"]["forecast"]
+        except:
+            forecast_url = None
+        return forecast_url
+
+    def get_weather_forecast(self):
+        url = self.weather_url
+        response = requests.get(url)
+        pprint(response.json())
+        return response.text
+
+    def save_to_db(self):
         db.session.add(self)
         db.session.commit()
 
-        # connection = sqlite3.connect("data.db")
-        # cursor = connection.cursor()
-
-        # query = "INSERT INTO items (name, price) VALUES (?,?)"
-        # cursor.execute(query, (self.name, self.price))
-        # connection.commit()
-        # connection.close()
+    def upsert(self):
+        db.session.add(self)
+        db.session.commit()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
 
-        # connection = sqlite3.connect("data.db")
-        # cursor = connection.cursor()
-
-        # query = "UPDATE items SET price = ? WHERE name = ?"
-        # cursor.execute(query, (self.price, self.name))
-        # connection.commit()
-        # connection.close()

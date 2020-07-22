@@ -7,13 +7,8 @@ import config
 import requests
 
 
-# user is in models instead of resources because there are no API endpoints for User information
-# model is the internal representation, resource is the external representation
-
-
 class TravelTimeModel(db.Model):
 
-    # these next lines are how you connect to database
     __tablename__ = "travel_time"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,8 +39,10 @@ class TravelTimeModel(db.Model):
     @classmethod
     def find_campsites_by_duration(cls, zipcode, willing_duration):
         zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
-        return cls.query.filter_by(zipcode_id=zipcode_id).filter(
-            cls.duration < willing_duration
+        return (
+            cls.query.filter_by(zipcode_id=zipcode_id)
+            .filter(cls.duration < willing_duration, cls.duration >= 0)
+            .all()
         )
 
     @classmethod
@@ -67,24 +64,6 @@ class TravelTimeModel(db.Model):
         js = response.json()
         duration = js["rows"][0]["elements"][0]["duration"]["value"]
         return duration
-
-    # @classmethod
-    # def add_campsites_within_5_hours(cls, zipcode, willing_duration):
-
-    # connection = sqlite3.connect("data.db")
-    # cursor = connection.cursor()
-
-    # query = "SELECT * FROM users WHERE username=?"
-    # result = cursor.execute(query, (username,))
-    # row = result.fetchone()
-    # # *row passes the three arguments in row as a set, which will expand to the three init arguments to User class
-    # if row:
-    #     user = cls(*row)
-    # else:
-    #     user = None
-
-    # connection.close()
-    # return user
 
     def save_to_db(self):
         db.session.add(self)
