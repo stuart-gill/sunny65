@@ -4,6 +4,8 @@ from models.weather_forecast import WeatherForecastModel
 from pprint import pprint
 from datetime import datetime, timezone
 
+import requests
+
 
 class WeatherForecastList(Resource):
     def get(self):
@@ -44,6 +46,10 @@ class WeatherForecastForCampsite(Resource):
         return {"forecasts": [forecast.json() for forecast in forecasts]}
 
     def post(self, campsite_id):
+        # first, delete all existing forecasts from database
+        # doing this by calling api inside api call, to see how that works
+        # not the best idea to delete all forecasts before successfully retrieving new ones-- need to change this, add failsafe
+        requests.delete(f"http://127.0.0.1:5000/forecast/{campsite_id}")
         campsite = CampsiteModel.find_by_id(campsite_id)
         forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
         try:
@@ -55,6 +61,9 @@ class WeatherForecastForCampsite(Resource):
                     campsite_id, time, short_forecast, temperature
                 )
                 forecast.save_to_db()
+            return {
+                "message": f"forecasts for campsite {campsite_id} retrieved and inserted"
+            }
         except:
             return {"message": "forecast post failure"}
         pprint(forecast_js)
