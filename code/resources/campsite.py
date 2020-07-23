@@ -16,8 +16,6 @@ class Campsite(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument("lat", type=float)
     parser.add_argument("lng", type=float)
-    parser.add_argument("weather_url", type=str)
-    parser.add_argument("weather_forecast", type=str)
 
     # @jwt_required()
     def get(self, name):
@@ -31,13 +29,7 @@ class Campsite(Resource):
             return {"message": f"an campsite with name {name} already exists"}, 400
 
         data = Campsite.parser.parse_args()
-        campsite = CampsiteModel(
-            name,
-            data["lat"],
-            data["lng"],
-            data["weather_url"],
-            data["weather_forecast"],
-        )
+        campsite = CampsiteModel(name, data["lat"], data["lng"])
 
         try:
             campsite.upsert()
@@ -67,11 +59,8 @@ class Campsite(Resource):
         if campsite:
             campsite.lat = data["lat"]
             campsite.lng = data["lng"]
-            campsite.weather_url = data["weather_url"]
         else:
-            campsite = CampsiteModel(
-                name, data["lat"], data["lng"], data["weather_url"]
-            )
+            campsite = CampsiteModel(name, data["lat"], data["lng"])
         try:
             campsite.upsert()
             return campsite.json()
@@ -95,34 +84,12 @@ class CampsiteByZipList(Resource):
 
     def get(self, zipcode):
         """
-        Get a list of all campsites within acceptable_distance of zipcode, as the crow flies
+        Get a list of all campsites within acceptable_distance of zipcode, as the crow flies (and get forecasts)
         """
         data = CampsiteByZipList.parser.parse_args()
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
             zipcode, data["acceptable_distance"]
         )
-        for campsite in campsites:
-            # get campsite weather url from weather.gov
-            if not campsite.weather_url:
-                campsite.weather_url = campsite.get_weather_url()
-                campsite.upsert()
-            # get forecast for campsite
-            if campsite.weather_url:
-                js = WeatherForecastModel.get_forecast(campsite.weather_url)
-                try:
-                    for period in js["properties"]["periods"]:
-                        if period["isDaytime"]:
-                            forecast = WeatherForecastModel(
-                                campsite.id,
-                                period["name"],
-                                period["detailedForecast"],
-                                period["shortForecast"],
-                                period["temperature"],
-                            )
-                            forecast.save_to_db()
-                except:
-                    print(f"forecast for {campsite.name} failed")
-
         return {
             "count": len(campsites),
             "campsites": [campsite.json() for campsite in campsites],

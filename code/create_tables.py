@@ -3,35 +3,6 @@ import sqlite3
 
 import numpy as np
 
-
-class Campsite:
-    def __init__(
-        self,
-        campsite_id: int,
-        name: str,
-        lat: float,
-        lng: float,
-        state: str,
-        weather_url: str = None,
-        weather_forecast: str = None,
-        duration: int = None,
-    ):
-        self.campsite_id = campsite_id
-        self.name = name
-        self.lat = lat
-        self.lng = lng
-        self.state = state
-        self.weather_url = weather_url
-        self.weather_forecast = weather_forecast
-        self.duration = duration
-
-    def __str__(self):
-        return f"{self.campsite_id}, {self.name}, {self.state}"  # .format(self.campsite_id, self.name, self.state)
-
-    def __repr__(self):
-        return f"<Campsite({self.campsite_id}, '{self.name}', {self.lat}, {self.lng}, {self.state}, '{self.weather_url}', '{self.weather_forecast}', {self.duration}>"
-
-
 # build and initialize sqlite database of destinations
 # using csv from http://www.uscampgrounds.info/takeit.html
 # currently just western campsites
@@ -48,9 +19,7 @@ def build_campsite_database():
         id     INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         name   TEXT UNIQUE NOT NULL,
         lat    DECIMAL(9,6) NOT NULL,
-        lng    DECIMAL(9,5) NOT NULL,
-        weather_url TEXT,
-        weather_forecast TEXT
+        lng    DECIMAL(9,5) NOT NULL
     );
 
     """
@@ -338,12 +307,9 @@ def distance_matrix(zipcode, distance_filtered_locs):
                 locs_sans_durations[j]["travel_time"] = durations_from_api[j]
 
 
-# database_build = input("do you want to rebuild databases? y/n: \n")
-# if database_build == "y":
-#     build_campsite_database()
-#     build_zip_database()
-#     print("Databases built")
-
-
-get_distance_filtered_locs(98122, 20)
+database_build = input("do you want to rebuild databases? y/n: \n")
+if database_build == "y":
+    build_campsite_database()
+    build_zip_database()
+    print("Databases built")
 
