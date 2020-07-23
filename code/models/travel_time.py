@@ -69,12 +69,16 @@ class TravelTimeModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
     def json(self):
         return {
             "zipcode_id": self.zipcode_id,
-            "zipcode": ZipcodeModel.find_by_id(self.zipcode_id).zipcode,
+            "zipcode": self.zipcode.zipcode,
             "campsite_id": self.campsite_id,
-            "campsite_name": CampsiteModel.find_by_id(self.campsite_id).name,
+            "campsite_name": self.campsite.name,
             "travel_time": self.duration,
         }
 

@@ -1,6 +1,5 @@
 import sqlite3
 from db import db
-from models.campsite import CampsiteModel
 import config
 
 import requests
@@ -22,7 +21,7 @@ class WeatherForecastModel(db.Model):
     time_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
     campsite = db.relationship(
-        CampsiteModel,
+        "CampsiteModel",
         backref=db.backref("weather_forecasts", cascade="all, delete-orphan"),
     )
 

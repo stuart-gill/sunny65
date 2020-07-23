@@ -28,7 +28,7 @@ jwt = JWT(
 )  # JWT will create /auth endpoint... that endpoint will return JWT token
 
 api.add_resource(Zipcode, "/zipcode/<string:zipcode>")
-api.add_resource(Campsite, "/campsite/<string:name>")
+api.add_resource(Campsite, "/campsite")
 api.add_resource(CampsiteList, "/campsites/all")
 api.add_resource(ZipcodeList, "/zipcodes")
 api.add_resource(TravelTime, "/traveltime")

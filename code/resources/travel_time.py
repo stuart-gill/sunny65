@@ -89,6 +89,7 @@ class TravelTimeByZipList(Resource):
 
     parser = reqparse.RequestParser()
     parser.add_argument("willing_travel_time", type=int)
+    parser.add_argument("maximum_linear_distance", type=int)
 
     def get(self, zipcode):
         """
@@ -109,8 +110,12 @@ class TravelTimeByZipList(Resource):
         """
         From origin zipcode, get a list of distance appropriate campsites, then use google distance matrix to calculate travel times between zipcode and each campsite. Save each to the db. Unclear to me whether calling this will overwrite existing travel_times or not. It does not seem to create duplicates. 
         """
+        data = TravelTimeByZipList.parser.parse_args()
         zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
-        campsites = CampsiteModel.find_by_distance_as_crow_flies(zipcode, 240)
+        # is there any advantage to calling API below rather than using CampsiteModel directly?
+        campsites = CampsiteModel.find_by_distance_as_crow_flies(
+            zipcode, data["maximum_linear_distance"]
+        )
         for campsite in campsites:
             try:
                 duration = TravelTimeModel.get_duration_from_google(

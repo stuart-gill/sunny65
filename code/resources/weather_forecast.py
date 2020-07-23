@@ -4,36 +4,30 @@ from models.weather_forecast import WeatherForecastModel
 from pprint import pprint
 from datetime import datetime, timezone
 
+import time
 import requests
 
 
 class WeatherForecastList(Resource):
     def get(self):
         """
-        Get and list all weather forecasts for campsites that have a weather_url property
+        Get and list all weather forecasts
         """
-        # for campsite in CampsiteModel.query.all():
-        #     if campsite.weather_url:
-        #         js = WeatherForecastModel.get_forecast(campsite.weather_url)
-        #         try:
-        #             for period in js["properties"]["periods"]:
-        #                 if period["isDaytime"]:
-        #                     forecast = WeatherForecastModel(
-        #                         campsite.id,
-        #                         period["name"],
-        #                         period["detailedForecast"],
-        #                         period["shortForecast"],
-        #                         period["temperature"],
-        #                     )
-        #                     forecast.save_to_db()
-        #         except:
-        #             print(f"forecast for {campsite.name} failed")
 
         return {
             "forecasts": [
                 forecast.json() for forecast in WeatherForecastModel.query.all()
             ]
         }
+
+    def post(self):
+        """
+        Retrieve and save forecasts for all campsites
+        """
+        for campsite in CampsiteModel.query.all():
+            requests.post(f"http://127.0.0.1:5000/forecast/{campsite.id}")
+            time.sleep(1)
+        return {"message": "forecasts for all campsites retrieved and saved"}
 
 
 class WeatherForecastForCampsite(Resource):

@@ -1,4 +1,5 @@
 from db import db
+
 from models.zipcode import ZipcodeModel
 import numpy as np
 import requests
@@ -14,6 +15,7 @@ class CampsiteModel(db.Model):
     lng = db.Column(db.Float(precision=5))
 
     zipcodes = db.relationship("ZipcodeModel", secondary="travel_time")
+    forecasts = db.relationship("WeatherForecastModel")
 
     # state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     # state = db.relationship("StateModel")  # hooks items and stores tables together
@@ -24,6 +26,15 @@ class CampsiteModel(db.Model):
         self.lng = lng
 
     def json(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "lat": self.lat,
+            "lng": self.lng,
+            "forecasts": [forecast.json() for forecast in self.forecasts],
+        }
+
+    def json_without_forecasts(self):
         return {
             "name": self.name,
             "id": self.id,

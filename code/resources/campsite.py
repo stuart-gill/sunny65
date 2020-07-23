@@ -2,7 +2,8 @@ from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.campsite import CampsiteModel
 from models.weather_forecast import WeatherForecastModel
-import time
+
+import requests
 
 
 # resources used to map endpoints (like get, post) to /campsite/name or whatever
@@ -14,22 +15,30 @@ import time
 class Campsite(Resource):
 
     parser = reqparse.RequestParser()
+    parser.add_argument("campsite_id", type=int)
+    parser.add_argument("name", type=str)
     parser.add_argument("lat", type=float)
     parser.add_argument("lng", type=float)
 
     # @jwt_required()
-    def get(self, name):
-        campsite = CampsiteModel.find_by_name(name)
+    def get(self):
+        data = Campsite.parser.parse_args()
+        campsite_id = data["campsite_id"]
+        campsite = CampsiteModel.find_by_id(campsite_id)
         if campsite:
             return campsite.json()
         return {"message": "campsite not found"}, 404
 
-    def post(self, name):
+    def post(self):
+        data = Campsite.parser.parse_args()
+        name = data["name"]
+        lat = data["lat"]
+        lng = data["lng"]
         if CampsiteModel.find_by_name(name):
             return {"message": f"an campsite with name {name} already exists"}, 400
 
         data = Campsite.parser.parse_args()
-        campsite = CampsiteModel(name, data["lat"], data["lng"])
+        campsite = CampsiteModel(name, lat, lng)
 
         try:
             campsite.upsert()
@@ -43,29 +52,32 @@ class Campsite(Resource):
         return campsite.json(), 201
 
     # @jwt_required()
-    def delete(self, name):
-        campsite = CampsiteModel.find_by_name(name)
+    def delete(self):
+        data = Campsite.parser.parse_args()
+        campsite_id = data["campsite_id"]
+        print(campsite_id)
+        campsite = CampsiteModel.find_by_id(campsite_id)
         if campsite:
             campsite.delete()
             return {"message": "campsite deleted"}
         return {"message": "campsite not found"}, 404
 
-    def put(self, name):
+    def put(self):
 
         data = Campsite.parser.parse_args()
-
-        campsite = CampsiteModel.find_by_name(name)
+        campsite = CampsiteModel.find_by_id(data["campsite_id"])
 
         if campsite:
+            campsite.name = data["name"]
             campsite.lat = data["lat"]
             campsite.lng = data["lng"]
         else:
-            campsite = CampsiteModel(name, data["lat"], data["lng"])
+            return {"message": f"campsite with id {data['campsite_id']} not found"}
         try:
             campsite.upsert()
             return campsite.json()
         except:
-            return {"message": "an error occured inserting the campsite"}, 500
+            return {"message": "an error occured updating the campsite"}, 500
 
 
 class CampsiteList(Resource):
@@ -74,7 +86,7 @@ class CampsiteList(Resource):
 
         return {
             "count": len(campsites),
-            "campsites": [campsite.json() for campsite in campsites],
+            "campsites": [campsite.json_without_forecasts() for campsite in campsites],
         }
 
 
@@ -84,7 +96,7 @@ class CampsiteByZipList(Resource):
 
     def get(self, zipcode):
         """
-        Get a list of all campsites within acceptable_distance of zipcode, as the crow flies (and get forecasts)
+        Get a list of all campsites within acceptable_distance of zipcode, as the crow flies 
         """
         data = CampsiteByZipList.parser.parse_args()
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
@@ -92,6 +104,16 @@ class CampsiteByZipList(Resource):
         )
         return {
             "count": len(campsites),
-            "campsites": [campsite.json() for campsite in campsites],
+            "campsites": [campsite.json_without_forecasts() for campsite in campsites],
         }
+
+
+# class CampsiteByWeatherList(Resource):
+#     parser = reqparse.RequestParser()
+#     parser.add_argument("min_temp", type=float)
+
+#     def get(self, zipcode):
+#         """
+#         Get a list of all campsites with acceptable weather within a certain range
+#         """
 
