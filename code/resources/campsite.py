@@ -2,6 +2,8 @@ from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.campsite import CampsiteModel
 from models.weather_forecast import WeatherForecastModel
+from models.travel_time import TravelTimeModel
+from models.zipcode import ZipcodeModel
 
 import requests
 
@@ -92,15 +94,19 @@ class CampsiteList(Resource):
 
 class CampsiteByZipList(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument("acceptable_distance", type=float)
+    parser.add_argument("acceptable_duration", type=float)
 
     def get(self, zipcode):
         """
         Get a list of all campsites within acceptable_distance of zipcode, as the crow flies 
         """
         data = CampsiteByZipList.parser.parse_args()
-        campsites = CampsiteModel.find_by_distance_as_crow_flies(
-            zipcode, data["acceptable_distance"]
+        zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
+        # campsites = CampsiteModel.find_by_distance_as_crow_flies(
+        #     zipcode_obj.lat, zipcode_obj.lng, data["acceptable_distance"]
+        # )
+        campsites = CampsiteModel.find_by_duration(
+            zipcode_obj.id, data["acceptable_duration"]
         )
         return {
             "count": len(campsites),
@@ -110,10 +116,23 @@ class CampsiteByZipList(Resource):
 
 # class CampsiteByWeatherList(Resource):
 #     parser = reqparse.RequestParser()
-#     parser.add_argument("min_temp", type=float)
+#     # parser.add_argument("min_temp", type=float)
+#     parser.add_argument("willing_travel_time", type=int)
 
 #     def get(self, zipcode):
 #         """
-#         Get a list of all campsites with acceptable weather within a certain range
+#         Get a list of all campsites within a certain range
 #         """
+#         data = CampsiteByZipList.parser.parse_args()
+#         willing_travel_time = data["willing_travel_time"]
+#         campsites = [
+#             travel_time.campsite
+#             for travel_time in TravelTimeModel.find_campsites_by_duration(
+#                 zipcode, willing_travel_time
+#             )
+#         ]
+#         return {
+#             "count": len(campsites),
+#             "campsites": [campsite.json_without_forecasts() for campsite in campsites],
+#         }
 

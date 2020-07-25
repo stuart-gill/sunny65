@@ -5,10 +5,6 @@ import config
 import requests
 
 
-# user is in models instead of resources because there are no API endpoints for User information
-# model is the internal representation, resource is the external representation
-
-
 class WeatherForecastModel(db.Model):
 
     __tablename__ = "weather_forecasts"

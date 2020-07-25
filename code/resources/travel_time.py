@@ -90,15 +90,19 @@ class TravelTimeByZipList(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument("willing_travel_time", type=int)
     parser.add_argument("maximum_linear_distance", type=int)
+    parser.add_argument("min_temp", type=int)
 
     def get(self, zipcode):
         """
-        Get a list of travel times from origin zipcode that are under the willing travel time
+        Get a list of travel times from origin zipcode that are under the willing travel time (includes all forecasts)
         """
 
         data = TravelTimeByZipList.parser.parse_args()
+        zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
+
+        min_temp = data["min_temp"]
         travel_times = TravelTimeModel.find_campsites_by_duration(
-            zipcode, data["willing_travel_time"]
+            zipcode_obj.id, data["willing_travel_time"]
         )
 
         return {
@@ -111,19 +115,19 @@ class TravelTimeByZipList(Resource):
         From origin zipcode, get a list of distance appropriate campsites, then use google distance matrix to calculate travel times between zipcode and each campsite. Save each to the db. Unclear to me whether calling this will overwrite existing travel_times or not. It does not seem to create duplicates. 
         """
         data = TravelTimeByZipList.parser.parse_args()
-        zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
+        zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
         # is there any advantage to calling API below rather than using CampsiteModel directly?
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
-            zipcode, data["maximum_linear_distance"]
+            zipcode_obj.id, data["maximum_linear_distance"]
         )
         for campsite in campsites:
             try:
                 duration = TravelTimeModel.get_duration_from_google(
-                    zipcode_id, campsite.id
+                    zipcode_obj.lat, zipcode_obj.lng, campsite.lat, campsite.lng
                 )
             except:
                 duration = -1
-            travel_time = TravelTimeModel(zipcode_id, campsite.id, duration)
+            travel_time = TravelTimeModel(zipcode_obj.id, campsite.id, duration)
             travel_time.save_to_db()
         return {"message": "travel times inserted"}
 

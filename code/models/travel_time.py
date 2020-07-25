@@ -1,7 +1,6 @@
 import sqlite3
 from db import db
-from models.zipcode import ZipcodeModel
-from models.campsite import CampsiteModel
+
 import config
 
 import requests
@@ -17,10 +16,10 @@ class TravelTimeModel(db.Model):
     duration = db.Column(db.Integer)
 
     zipcode = db.relationship(
-        ZipcodeModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "ZipcodeModel", backref=db.backref("travel_time", cascade="all, delete-orphan")
     )
     campsite = db.relationship(
-        CampsiteModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "CampsiteModel", backref=db.backref("travel_time", cascade="all, delete-orphan")
     )
 
     # leave id off object creation since DB autoincrements it... we should never be entering an ID
@@ -37,8 +36,7 @@ class TravelTimeModel(db.Model):
         ).first()
 
     @classmethod
-    def find_campsites_by_duration(cls, zipcode, willing_duration):
-        zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
+    def find_campsites_by_duration(cls, zipcode_id, willing_duration):
         return (
             cls.query.filter_by(zipcode_id=zipcode_id)
             .filter(cls.duration < willing_duration, cls.duration >= 0)
@@ -46,18 +44,16 @@ class TravelTimeModel(db.Model):
         )
 
     @classmethod
-    def get_duration_from_google(cls, zipcode_id, campsite_id):
-        zipcode = ZipcodeModel.find_by_id(zipcode_id)
-        campsite = CampsiteModel.find_by_id(campsite_id)
-        origin_lat, origin_lng = zipcode.lat, zipcode.lng
-        destination_lat, destination_lng = campsite.lat, campsite.lng
+    def get_duration_from_google(
+        cls, zipcode_lat, zipcode_lng, campsite_lat, campsite_lng
+    ):
 
         api_key = config.GMAPS_API_KEY
         serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
         params = {
-            "origins": f"{origin_lat},{origin_lng}",
-            "destinations": f"{destination_lat},{destination_lng}",
+            "origins": f"{zipcode_lat},{zipcode_lng}",
+            "destinations": f"{campsite_lat},{campsite_lng}",
             "key": api_key,
         }
         response = requests.get(serviceurl, params=params)
@@ -80,5 +76,8 @@ class TravelTimeModel(db.Model):
             "campsite_id": self.campsite_id,
             "campsite_name": self.campsite.name,
             "travel_time": self.duration,
+            "campsite_forecasts": [
+                forecast.json() for forecast in self.campsite.weather_forecasts
+            ],
         }
 
