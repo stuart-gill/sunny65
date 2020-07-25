@@ -70,14 +70,5 @@ class TravelTimeModel(db.Model):
         db.session.commit()
 
     def json(self):
-        return {
-            "zipcode_id": self.zipcode_id,
-            "zipcode": self.zipcode.zipcode,
-            "campsite_id": self.campsite_id,
-            "campsite_name": self.campsite.name,
-            "travel_time": self.duration,
-            "campsite_forecasts": [
-                forecast.json() for forecast in self.campsite.weather_forecasts
-            ],
-        }
+        return {"duration": self.duration, "campsite": self.campsite.json()}
 

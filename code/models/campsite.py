@@ -18,7 +18,9 @@ class CampsiteModel(db.Model):
     zipcodes = db.relationship("ZipcodeModel", secondary="travel_time")
 
     # dont' need this line because backref in weather_forecasts creates realtionship and "weather_forecasts" list
-    # forecasts = db.relationship("WeatherForecastModel")
+    # weather_forecasts = db.relationship(
+    #     "WeatherForecastModel", backref=db.backref("campsite", lazy="joined")
+    # )
 
     # state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     # state = db.relationship("StateModel")  # hooks items and stores tables together
