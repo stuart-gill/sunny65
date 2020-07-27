@@ -77,9 +77,12 @@ Once your locations are found, you can check the map of campsites that's been bu
 
 ### Most Useful API endpoints
 
-POST /forecasts/all -- gets updated forecast for every campsite from open weather api, saves to db
-POST /traveltimes/<zipcode> {"maximum_linear_distance": x} -- gets travel times for all campsites within x distance of zipcode from google distance api, saves them to db
-GET /traveltimes/<zipcode> {"willind_travel_time": x} -- returns travel times for every campsite within x seconds of zipcode. Each travel time includes information about the campsite itself as well as 5 days forcast for that campsite
+`POST /forecasts/all`
+gets updated forecast for every campsite from open weather api, saves to db
+`POST /traveltimes/<zipcode> {"maximum_linear_distance": x}`
+gets travel times for all campsites within x distance of zipcode from google distance api, saves them to db
+`GET /traveltimes/<zipcode> {"willind_travel_time": x}`
+returns travel times for every campsite within x seconds of zipcode. Each travel time includes information about the campsite itself as well as 5 days forcast for that campsite
 
 CRUD endpoints for zipcodes, campsites, forecasts, and travel times all exist, but are less commonly used.
 
