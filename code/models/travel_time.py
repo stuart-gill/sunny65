@@ -14,12 +14,18 @@ class TravelTimeModel(db.Model):
     zipcode_id = db.Column(db.Integer, db.ForeignKey("zipcodes.id"))
     campsite_id = db.Column(db.Integer, db.ForeignKey("campsites.id"))
     duration = db.Column(db.Integer)
+    __table_args__ = (
+        db.UniqueConstraint("zipcode_id", "campsite_id", name="_campsite_zipcode_uc"),
+    )
 
+    # don't need zipcode info, hence lazy="noload"
     zipcode = db.relationship(
-        "ZipcodeModel", backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "ZipcodeModel",
+        backref=db.backref("travel_time", cascade="all, delete-orphan", lazy="noload"),
     )
     campsite = db.relationship(
-        "CampsiteModel", backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "CampsiteModel",
+        backref=db.backref("travel_time", cascade="all, delete-orphan"),
     )
 
     # leave id off object creation since DB autoincrements it... we should never be entering an ID
@@ -35,11 +41,13 @@ class TravelTimeModel(db.Model):
             zipcode_id=zipcode_id, campsite_id=campsite_id
         ).first()
 
+    # think that db.joinedload(campsite) will auto load campsite for each duration in one select statement rather than two
     @classmethod
     def find_campsites_by_duration(cls, zipcode_id, willing_duration):
         return (
             cls.query.filter_by(zipcode_id=zipcode_id)
             .filter(cls.duration < willing_duration, cls.duration >= 0)
+            .options(db.joinedload(cls.campsite))
             .all()
         )
 

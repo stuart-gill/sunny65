@@ -15,7 +15,7 @@ class CampsiteModel(db.Model):
     lat = db.Column(db.Float(precision=6))
     lng = db.Column(db.Float(precision=5))
 
-    zipcodes = db.relationship("ZipcodeModel", secondary="travel_time")
+    zipcodes = db.relationship("ZipcodeModel", secondary="travel_time", lazy="noload")
 
     # dont' need this line because backref in weather_forecasts creates realtionship and "weather_forecasts" list
     # weather_forecasts = db.relationship(
