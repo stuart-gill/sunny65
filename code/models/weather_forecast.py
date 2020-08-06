@@ -68,7 +68,7 @@ class WeatherForecastModel(db.Model):
             "campsite_id": self.campsite_id,
             "campsite_name": self.campsite.name,
             "forecast_time": self.forecast_time.isoformat(),
-            "short_foreast": self.short_forecast,
+            "short_forecast": self.short_forecast,
             "temperature": self.temperature,
             "time_created": self.time_created.isoformat(),
         }

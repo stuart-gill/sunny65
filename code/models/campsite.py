@@ -88,7 +88,7 @@ class CampsiteModel(db.Model):
             cls.query.join(TravelTimeModel)
             .filter(
                 (TravelTimeModel.zipcode_id == zipcode_id)
-                & (TravelTimeModel.duration < max_duration)
+                & (TravelTimeModel.duration_value < max_duration)
             )
             .all()
         )

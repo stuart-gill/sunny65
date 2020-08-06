@@ -13,7 +13,8 @@ class TravelTimeModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     zipcode_id = db.Column(db.Integer, db.ForeignKey("zipcodes.id"))
     campsite_id = db.Column(db.Integer, db.ForeignKey("campsites.id"))
-    duration = db.Column(db.Integer)
+    duration_value = db.Column(db.Integer)
+    duration_text = db.Column(db.String(80))
     __table_args__ = (
         db.UniqueConstraint("zipcode_id", "campsite_id", name="_campsite_zipcode_uc"),
     )
@@ -29,10 +30,11 @@ class TravelTimeModel(db.Model):
     )
 
     # leave id off object creation since DB autoincrements it... we should never be entering an ID
-    def __init__(self, zipcode_id, campsite_id, duration):
+    def __init__(self, zipcode_id, campsite_id, duration_value, duration_text):
         self.zipcode_id = zipcode_id
         self.campsite_id = campsite_id
-        self.duration = duration
+        self.duration_value = duration_value
+        self.duration_text = duration_text
 
     @classmethod
     def find_by_ids(cls, zipcode_id, campsite_id):
@@ -46,7 +48,7 @@ class TravelTimeModel(db.Model):
     def find_campsites_by_duration(cls, zipcode_id, willing_duration):
         return (
             cls.query.filter_by(zipcode_id=zipcode_id)
-            .filter(cls.duration < willing_duration, cls.duration >= 0)
+            .filter(cls.duration_value < willing_duration, cls.duration_value >= 0)
             .options(db.joinedload(cls.campsite))
             .all()
         )
@@ -66,8 +68,9 @@ class TravelTimeModel(db.Model):
         }
         response = requests.get(serviceurl, params=params)
         js = response.json()
-        duration = js["rows"][0]["elements"][0]["duration"]["value"]
-        return duration
+        duration_value = js["rows"][0]["elements"][0]["duration"]["value"]
+        duration_text = js["rows"][0]["elements"][0]["duration"]["text"]
+        return (duration_value, duration_text)
 
     def save_to_db(self):
         db.session.add(self)
@@ -78,5 +81,8 @@ class TravelTimeModel(db.Model):
         db.session.commit()
 
     def json(self):
-        return {"duration": self.duration, "campsite": self.campsite.json()}
+        return {
+            "duration": {"value": self.duration_value, "text": self.duration_text},
+            "campsite": self.campsite.json(),
+        }
 

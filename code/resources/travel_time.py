@@ -9,21 +9,21 @@ class TravelTime(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument("zipcode_id", type=int)
     parser.add_argument("campsite_id", type=int)
-    parser.add_argument("duration", type=int)
+    parser.add_argument("duration_value", type=int)
+    parser.add_argument("duration_text", type=int)
     parser.add_argument("willing_travel_time", type=int)
     parser.add_argument("zipcode", type=str)
 
     def get(self):
         """
-        Get travel time between one zipcode id and campsite id
+        Get travel time between one zipcode id and campsite id. Not setting db value here
         """
 
         data = TravelTime.parser.parse_args()
-        return {
-            "duration": TravelTimeModel.get_duration_from_google(
-                data["zipcode_id"], data["campsite_id"]
-            )
-        }
+        duration_value, duration_text = TravelTimeModel.get_duration_from_google(
+            data["zipcode_id"], data["campsite_id"]
+        )
+        return {"duration_value": duration_value, "duration_text": duration_text}
 
     def post(self):
         """
@@ -37,7 +37,10 @@ class TravelTime(Resource):
 
         if data["duration"]:
             travel_time = TravelTimeModel(
-                data["zipcode_id"], data["campsite_id"], data["duration"]
+                data["zipcode_id"],
+                data["campsite_id"],
+                data["duration_value"],
+                data["duration_text"],
             )
         else:
             try:
@@ -53,7 +56,7 @@ class TravelTime(Resource):
                 )
 
             travel_time = TravelTimeModel(
-                data["zipcode_id"], data["campsite_id"], duration
+                data["zipcode_id"], data["campsite_id"], *duration
             )
         try:
             travel_time.save_to_db()
@@ -72,10 +75,14 @@ class TravelTime(Resource):
             data["zipcode_id"], data["campsite_id"]
         )
         if travel_time:
-            travel_time.duration = data["duration"]
+            travel_time.duration_value = data["duration_value"]
+            travel_time.duration_text = data["duration_text"]
         else:
             travel_time = TravelTimeModel(
-                data["zipcode_id"], data["campsite_id"], data["duration"]
+                data["zipcode_id"],
+                data["campsite_id"],
+                data["duration_value"],
+                data["duration_text"],
             )
         try:
             travel_time.save_to_db()
@@ -118,7 +125,7 @@ class TravelTimeByZipList(Resource):
         zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
         # is there any advantage to calling API below rather than using CampsiteModel directly?
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
-            zipcode_obj.id, data["maximum_linear_distance"]
+            zipcode_obj.lat, zipcode_obj.lng, data["maximum_linear_distance"]
         )
         for campsite in campsites:
             try:
@@ -126,9 +133,18 @@ class TravelTimeByZipList(Resource):
                     zipcode_obj.lat, zipcode_obj.lng, campsite.lat, campsite.lng
                 )
             except:
-                duration = -1
-            travel_time = TravelTimeModel(zipcode_obj.id, campsite.id, duration)
-            travel_time.save_to_db()
+                duration = (-1, "")
+
+            existing_travel_time = TravelTimeModel.find_by_ids(
+                zipcode_obj.id, campsite.id
+            )
+            if existing_travel_time:
+                existing_travel_time.delete()
+            travel_time = TravelTimeModel(zipcode_obj.id, campsite.id, *duration)
+            try:
+                travel_time.save_to_db()
+            except:
+                print(f"save travel time failed for campsite {campsite.id}")
         return {"message": "travel times inserted"}
 
 
