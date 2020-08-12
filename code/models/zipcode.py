@@ -27,7 +27,9 @@ class ZipcodeModel(db.Model):
             "lng": self.lng,
             "campsites_with_computed_travel_times": {
                 "count": len(self.campsites),
-                "campsites": [campsite.json() for campsite in self.campsites],
+                "campsites": [
+                    campsite.json_without_forecasts() for campsite in self.campsites
+                ],
             },
         }
         # "items": [item.json() for item in self.items.all()],

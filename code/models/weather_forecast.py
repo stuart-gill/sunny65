@@ -1,13 +1,8 @@
 import sqlite3
 from db import db
-from models.campsite import CampsiteModel
 import config
 
 import requests
-
-
-# user is in models instead of resources because there are no API endpoints for User information
-# model is the internal representation, resource is the external representation
 
 
 class WeatherForecastModel(db.Model):
@@ -16,23 +11,19 @@ class WeatherForecastModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     campsite_id = db.Column(db.Integer, db.ForeignKey("campsites.id"))
-    name = db.Column(db.String)
-    detailed_forecast = db.Column(db.String)
+    forecast_time = db.Column(db.DateTime(timezone=True))
     short_forecast = db.Column(db.String)
     temperature = db.Column(db.Integer)
     time_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
     campsite = db.relationship(
-        CampsiteModel,
+        "CampsiteModel",
         backref=db.backref("weather_forecasts", cascade="all, delete-orphan"),
     )
 
-    def __init__(
-        self, campsite_id, name, detailed_forecast, short_forecast, temperature
-    ):
+    def __init__(self, campsite_id, forecast_time, short_forecast, temperature):
         self.campsite_id = campsite_id
-        self.name = name
-        self.detailed_forecast = detailed_forecast
+        self.forecast_time = forecast_time
         self.short_forecast = short_forecast
         self.temperature = temperature
 
@@ -51,13 +42,12 @@ class WeatherForecastModel(db.Model):
     #     )
 
     @classmethod
-    def get_forecast(cls, weather_url):
-        url = weather_url
-        response = requests.get(url)
+    def get_forecast(cls, lat, lng):
+        api_key = config.OPEN_WEATHER_API_KEY
+        serviceurl = "https://api.openweathermap.org/data/2.5/forecast"
 
-        if response.status_code != 200:
-            print(f"status code for forecast: {response.status_code}")
-            print(response.text)
+        params = {"lat": lat, "lon": lng, "appid": api_key, "units": "imperial"}
+        response = requests.get(serviceurl, params=params)
         js = response.json()
         return js
 
@@ -77,9 +67,8 @@ class WeatherForecastModel(db.Model):
         return {
             "campsite_id": self.campsite_id,
             "campsite_name": self.campsite.name,
-            "name": self.name,
-            "short_foreast": self.short_forecast,
-            "detailed_forecast": self.detailed_forecast,
+            "forecast_time": self.forecast_time.isoformat(),
+            "short_forecast": self.short_forecast,
             "temperature": self.temperature,
             "time_created": self.time_created.isoformat(),
         }

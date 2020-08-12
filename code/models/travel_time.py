@@ -1,7 +1,6 @@
 import sqlite3
 from db import db
-from models.zipcode import ZipcodeModel
-from models.campsite import CampsiteModel
+
 import config
 
 import requests
@@ -14,20 +13,28 @@ class TravelTimeModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     zipcode_id = db.Column(db.Integer, db.ForeignKey("zipcodes.id"))
     campsite_id = db.Column(db.Integer, db.ForeignKey("campsites.id"))
-    duration = db.Column(db.Integer)
+    duration_value = db.Column(db.Integer)
+    duration_text = db.Column(db.String(80))
+    __table_args__ = (
+        db.UniqueConstraint("zipcode_id", "campsite_id", name="_campsite_zipcode_uc"),
+    )
 
+    # don't need zipcode info, hence lazy="noload"
     zipcode = db.relationship(
-        ZipcodeModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "ZipcodeModel",
+        backref=db.backref("travel_time", cascade="all, delete-orphan", lazy="noload"),
     )
     campsite = db.relationship(
-        CampsiteModel, backref=db.backref("travel_time", cascade="all, delete-orphan")
+        "CampsiteModel",
+        backref=db.backref("travel_time", cascade="all, delete-orphan"),
     )
 
     # leave id off object creation since DB autoincrements it... we should never be entering an ID
-    def __init__(self, zipcode_id, campsite_id, duration):
+    def __init__(self, zipcode_id, campsite_id, duration_value, duration_text):
         self.zipcode_id = zipcode_id
         self.campsite_id = campsite_id
-        self.duration = duration
+        self.duration_value = duration_value
+        self.duration_text = duration_text
 
     @classmethod
     def find_by_ids(cls, zipcode_id, campsite_id):
@@ -36,45 +43,46 @@ class TravelTimeModel(db.Model):
             zipcode_id=zipcode_id, campsite_id=campsite_id
         ).first()
 
+    # think that db.joinedload(campsite) will auto load campsite for each duration in one select statement rather than two
     @classmethod
-    def find_campsites_by_duration(cls, zipcode, willing_duration):
-        zipcode_id = ZipcodeModel.find_by_zipcode(zipcode).id
+    def find_campsites_by_duration(cls, zipcode_id, willing_duration):
         return (
             cls.query.filter_by(zipcode_id=zipcode_id)
-            .filter(cls.duration < willing_duration, cls.duration >= 0)
+            .filter(cls.duration_value < willing_duration, cls.duration_value >= 0)
+            .options(db.joinedload(cls.campsite))
             .all()
         )
 
     @classmethod
-    def get_duration_from_google(cls, zipcode_id, campsite_id):
-        zipcode = ZipcodeModel.find_by_id(zipcode_id)
-        campsite = CampsiteModel.find_by_id(campsite_id)
-        origin_lat, origin_lng = zipcode.lat, zipcode.lng
-        destination_lat, destination_lng = campsite.lat, campsite.lng
+    def get_duration_from_google(
+        cls, zipcode_lat, zipcode_lng, campsite_lat, campsite_lng
+    ):
 
         api_key = config.GMAPS_API_KEY
         serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
         params = {
-            "origins": f"{origin_lat},{origin_lng}",
-            "destinations": f"{destination_lat},{destination_lng}",
+            "origins": f"{zipcode_lat},{zipcode_lng}",
+            "destinations": f"{campsite_lat},{campsite_lng}",
             "key": api_key,
         }
         response = requests.get(serviceurl, params=params)
         js = response.json()
-        duration = js["rows"][0]["elements"][0]["duration"]["value"]
-        return duration
+        duration_value = js["rows"][0]["elements"][0]["duration"]["value"]
+        duration_text = js["rows"][0]["elements"][0]["duration"]["text"]
+        return (duration_value, duration_text)
 
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
     def json(self):
         return {
-            "zipcode_id": self.zipcode_id,
-            "zipcode": ZipcodeModel.find_by_id(self.zipcode_id).zipcode,
-            "campsite_id": self.campsite_id,
-            "campsite_name": CampsiteModel.find_by_id(self.campsite_id).name,
-            "travel_time": self.duration,
+            "duration": {"value": self.duration_value, "text": self.duration_text},
+            "campsite": self.campsite.json(),
         }
 
