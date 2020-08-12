@@ -48,7 +48,7 @@ class WeatherForecastForCampsite(Resource):
         forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
         try:
             for period in forecast_js["list"]:
-                time = datetime.fromtimestamp(period["dt"], tz=timezone.utc)
+                time = datetime.fromtimestamp(period["dt"])
                 short_forecast = period["weather"][0]["description"]
                 temperature = period["main"]["temp"]
                 forecast = WeatherForecastModel(
