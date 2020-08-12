@@ -1,4 +1,3 @@
-import sqlite3
 from db import db
 
 # user is in models instead of resources because there are no API endpoints for User information

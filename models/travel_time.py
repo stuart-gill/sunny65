@@ -1,7 +1,9 @@
-import sqlite3
 from db import db
 
-import config
+# uncomment if running locally with config folder
+# import config
+
+import os
 
 import requests
 
@@ -58,7 +60,8 @@ class TravelTimeModel(db.Model):
         cls, zipcode_lat, zipcode_lng, campsite_lat, campsite_lng
     ):
 
-        api_key = config.GMAPS_API_KEY
+        # api_key = config.GMAPS_API_KEY
+        api_key = os.environ.get("GMAPS_API_KEY")
         serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
         params = {

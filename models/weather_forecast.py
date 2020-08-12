@@ -1,7 +1,7 @@
-import sqlite3
 from db import db
-import config
 
+# import config
+import os
 import requests
 
 
@@ -43,7 +43,9 @@ class WeatherForecastModel(db.Model):
 
     @classmethod
     def get_forecast(cls, lat, lng):
-        api_key = config.OPEN_WEATHER_API_KEY
+
+        api_key = os.environ.get("OPEN_WEATHER_API_KEY")
+        # api_key = config.OPEN_WEATHER_API_KEY
         serviceurl = "https://api.openweathermap.org/data/2.5/forecast"
 
         params = {"lat": lat, "lon": lng, "appid": api_key, "units": "imperial"}

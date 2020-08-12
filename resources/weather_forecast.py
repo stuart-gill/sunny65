@@ -60,7 +60,7 @@ class WeatherForecastForCampsite(Resource):
             }
         except:
             return {"message": "forecast post failure"}
-        pprint(forecast_js)
+        # pprint(forecast_js)
 
     """
     Delete all weather forecasts for one campsite by id
