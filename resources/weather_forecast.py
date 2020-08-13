@@ -46,8 +46,13 @@ class WeatherForecastForCampsite(Resource):
         # first, delete all existing forecasts from database
         # doing this by calling api inside api call, to see how that works
         # not the best idea to delete all forecasts before successfully retrieving new ones-- need to change this, add failsafe
-
         # requests.delete(f"{URL}/forecast/{campsite_id}")
+
+        # diff version not calling own api:
+        forecasts = WeatherForecastModel.find_forecasts_for_campsite(campsite_id)
+        for forecast in forecasts:
+            forecast.delete_from_db()
+
         campsite = CampsiteModel.find_by_id(campsite_id)
         forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
         try:
