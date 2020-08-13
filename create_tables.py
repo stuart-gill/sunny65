@@ -1,7 +1,7 @@
 import csv
 import sqlite3
+import requests
 
-import numpy as np
 
 # build and initialize sqlite database of destinations
 # using csv from http://www.uscampgrounds.info/takeit.html
@@ -90,8 +90,51 @@ def build_zip_database():
     print("zipcodes database built, connection closed")
 
 
+def build_heroku_databases():
+
+    # build campsite database
+    fname = "WestCamp.csv"
+    with open(fname, newline="", errors="ignore") as csvfile:
+        campsite_reader = csv.reader(csvfile, delimiter=",", quotechar="|")
+        for row in campsite_reader:
+            name = row[4]
+            lat = row[1]
+            lng = row[0]
+
+            url = f"https://sunny65-api.herokuapp.com/campsite"
+            data = {
+                "name": name,
+                "lat": lat,
+                "lng": lng,
+            }
+            r = requests.post(url, data=data)
+            print(r.text)
+
+    # build zipcode database
+    fname = "us-zip-code-latitude-and-longitude.csv"
+    with open(fname, newline="", errors="ignore") as csvfile:
+        zipcode_reader = csv.reader(csvfile, delimiter=";", quotechar="|")
+        for row in zipcode_reader:
+            zipcode = row[0]
+            lat = row[3]
+            lng = row[4]
+
+            url = f"https://sunny65-api.herokuapp.com/zipcode/{zipcode}"
+            data = {
+                "lat": lat,
+                "lng": lng,
+            }
+            r = requests.post(url, data=data)
+            print(r.text)
+
+
 database_build = input("do you want to rebuild databases? y/n: \n")
 if database_build == "y":
-    build_campsite_database()
-    build_zip_database()
-    print("Databases built")
+    location = input("locally or on heroku deployment? l/h \n")
+    if location == "l":
+        build_campsite_database()
+        build_zip_database()
+        print("Databases built")
+    elif location == "h":
+        build_heroku_databases()
+

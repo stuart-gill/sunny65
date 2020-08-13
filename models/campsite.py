@@ -1,9 +1,9 @@
 from db import db
 from models.travel_time import TravelTimeModel
 from models.zipcode import ZipcodeModel
+from sqlalchemy.exc import IntegrityError
 
 import numpy as np
-import requests
 from pprint import pprint
 
 
@@ -14,6 +14,9 @@ class CampsiteModel(db.Model):
     name = db.Column(db.String(80))
     lat = db.Column(db.Float(precision=6))
     lng = db.Column(db.Float(precision=5))
+    __table_args__ = (
+        db.UniqueConstraint("name", "lat", "lng", name="_name_lat_lng_uc"),
+    )
 
     zipcodes = db.relationship("ZipcodeModel", secondary="travel_time", lazy="noload")
 
@@ -93,9 +96,14 @@ class CampsiteModel(db.Model):
             .all()
         )
 
+    # is this the right place to throw this error, or in the resource path? whatever we do, do the same for Upsert
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            print("duplicate campsite entry detected!")
 
     def upsert(self):
         db.session.add(self)

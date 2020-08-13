@@ -36,8 +36,9 @@ class Campsite(Resource):
         name = data["name"]
         lat = data["lat"]
         lng = data["lng"]
-        if CampsiteModel.find_by_name(name):
-            return {"message": f"an campsite with name {name} already exists"}, 400
+        # Changed this duplication check to the model, where I added a name/lat/lng unique constraint-- just need to figure out how best to return the error to user
+        # if CampsiteModel.find_by_name(name):
+        #     return {"message": f"an campsite with name {name} already exists"}, 400
 
         data = Campsite.parser.parse_args()
         campsite = CampsiteModel(name, lat, lng)
