@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 import time
 import requests
 
+URL = "https://sunny65-api.herokuapp.com"
+# URL="http://127.0.0.1:5000"
+
 
 class WeatherForecastList(Resource):
     def get(self):
@@ -25,7 +28,7 @@ class WeatherForecastList(Resource):
         Retrieve and save forecasts for all campsites
         """
         for campsite in CampsiteModel.query.all():
-            requests.post(f"http://127.0.0.1:5000/forecast/{campsite.id}")
+            requests.post(f"URL/forecast/{campsite.id}")
             time.sleep(1)
         return {"message": "forecasts for all campsites retrieved and saved"}
 
@@ -43,7 +46,7 @@ class WeatherForecastForCampsite(Resource):
         # first, delete all existing forecasts from database
         # doing this by calling api inside api call, to see how that works
         # not the best idea to delete all forecasts before successfully retrieving new ones-- need to change this, add failsafe
-        requests.delete(f"http://127.0.0.1:5000/forecast/{campsite_id}")
+        requests.delete(f"URL/forecast/{campsite_id}")
         campsite = CampsiteModel.find_by_id(campsite_id)
         forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
         try:
