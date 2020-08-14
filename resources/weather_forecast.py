@@ -7,7 +7,8 @@ from datetime import datetime, timezone
 import time
 import requests
 
-URL = "https://sunny65-api.herokuapp.com"
+URL = "localhost"
+# URL = "https://sunny65-api.herokuapp.com"
 # URL="http://127.0.0.1:5000"
 
 

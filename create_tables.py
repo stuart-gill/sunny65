@@ -101,22 +101,22 @@ def build_cloud_databases(provider):
         return
 
     # build campsite database
-    fname = "WestCamp.csv"
-    with open(fname, newline="", errors="ignore") as csvfile:
-        campsite_reader = csv.reader(csvfile, delimiter=",", quotechar="|")
-        for row in campsite_reader:
-            name = row[4]
-            lat = row[1]
-            lng = row[0]
+    # fname = "WestCamp.csv"
+    # with open(fname, newline="", errors="ignore") as csvfile:
+    #     campsite_reader = csv.reader(csvfile, delimiter=",", quotechar="|")
+    #     for row in campsite_reader:
+    #         name = row[4]
+    #         lat = row[1]
+    #         lng = row[0]
 
-            url = f"{service_url}/campsite"
-            data = {
-                "name": name,
-                "lat": lat,
-                "lng": lng,
-            }
-            r = requests.post(url, data=data)
-            print(r.text)
+    #         url = f"{service_url}/campsite"
+    #         data = {
+    #             "name": name,
+    #             "lat": lat,
+    #             "lng": lng,
+    #         }
+    #         r = requests.post(url, data=data)
+    #         print(r.text)
 
     # build zipcode database
     fname = "us-zip-code-latitude-and-longitude.csv"
