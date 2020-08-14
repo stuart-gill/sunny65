@@ -106,8 +106,12 @@ class CampsiteModel(db.Model):
             print("duplicate campsite entry detected!")
 
     def upsert(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            print("duplicate campsite entry detected!")
 
     def delete(self):
         db.session.delete(self)

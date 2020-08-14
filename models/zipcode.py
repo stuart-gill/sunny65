@@ -5,7 +5,7 @@ class ZipcodeModel(db.Model):
     __tablename__ = "zipcodes"
 
     id = db.Column(db.Integer, primary_key=True)
-    zipcode = db.Column(db.String)
+    zipcode = db.Column(db.String, unique=True)
     lat = db.Column(db.Float(precision=6))
     lng = db.Column(db.Float(precision=5))
 
@@ -44,8 +44,12 @@ class ZipcodeModel(db.Model):
         return cls.query.filter_by(id=_id).first()
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print("duplicate zipcode entry detected!")
 
     def delete_from_db(self):
         db.session.delete(self)

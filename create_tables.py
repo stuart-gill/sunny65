@@ -90,7 +90,15 @@ def build_zip_database():
     print("zipcodes database built, connection closed")
 
 
-def build_heroku_databases():
+def build_cloud_databases(provider):
+
+    if provider == "h":
+        service_url = "https://sunny65-api.herokuapp.com"
+    elif provider == "d":
+        service_url = "http://128.199.0.88"
+    else:
+        print("input provider error")
+        return
 
     # build campsite database
     fname = "WestCamp.csv"
@@ -101,7 +109,7 @@ def build_heroku_databases():
             lat = row[1]
             lng = row[0]
 
-            url = f"https://sunny65-api.herokuapp.com/campsite"
+            url = f"{service_url}/campsite"
             data = {
                 "name": name,
                 "lat": lat,
@@ -119,7 +127,7 @@ def build_heroku_databases():
             lat = row[3]
             lng = row[4]
 
-            url = f"https://sunny65-api.herokuapp.com/zipcode/{zipcode}"
+            url = f"{service_url}/zipcode/{zipcode}"
             data = {
                 "lat": lat,
                 "lng": lng,
@@ -128,13 +136,13 @@ def build_heroku_databases():
             print(r.text)
 
 
-database_build = input("do you want to rebuild databases? y/n: \n")
+database_build = input("do you want to rebuild databases? [y/n]: \n")
 if database_build == "y":
-    location = input("locally or on heroku deployment? l/h \n")
+    location = input("locally or remote deployment? [l/r] \n")
     if location == "l":
         build_campsite_database()
         build_zip_database()
         print("Databases built")
-    elif location == "h":
-        build_heroku_databases()
-
+    elif location == "r":
+        provider = input("heroku or digital ocean? [h/d] \n")
+        build_cloud_databases(provider)

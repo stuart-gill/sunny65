@@ -58,4 +58,8 @@ class Zipcode(Resource):
 
 class ZipcodeList(Resource):
     def get(self):
-        return {"zipcodes": [zipcode.json() for zipcode in ZipcodeModel.query.all()]}
+        zipcodes = ZipcodeModel.query.all()
+        return {
+            "count": len(zipcodes),
+            "zipcodes": [zipcode.json() for zipcode in zipcodes],
+        }
