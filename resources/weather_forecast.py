@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 import time
 import requests
 
-URL = "localhost"
+# URL = "http://localhost"
 # URL = "https://sunny65-api.herokuapp.com"
-# URL="http://127.0.0.1:5000"
+# URL = "http://127.0.0.1:5000"
 
 
 class WeatherForecastList(Resource):
@@ -29,7 +29,24 @@ class WeatherForecastList(Resource):
         Retrieve and save forecasts for all campsites
         """
         for campsite in CampsiteModel.query.all():
-            requests.post(f"{URL}/forecast/{campsite.id}")
+            forecasts = WeatherForecastModel.find_forecasts_for_campsite(campsite.id)
+            for forecast in forecasts:
+                forecast.delete_from_db()
+
+            forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
+            pprint(forecast_js)
+            try:
+                for period in forecast_js["list"]:
+                    forecast_time = datetime.fromtimestamp(period["dt"])
+                    short_forecast = period["weather"][0]["description"]
+                    temperature = period["main"]["temp"]
+                    forecast = WeatherForecastModel(
+                        campsite.id, forecast_time, short_forecast, temperature
+                    )
+                    forecast.save_to_db()
+                print(f"forecasts save for {campsite.name}")
+            except:
+                print(f"forecast save error for campsite {campsite.name}")
             time.sleep(1)
         return {"message": "forecasts for all campsites retrieved and saved"}
 
