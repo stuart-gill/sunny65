@@ -44,7 +44,6 @@ class WeatherForecastList(Resource):
                         campsite.id, forecast_time, short_forecast, temperature
                     )
                     forecast.save_to_db()
-                print(f"forecasts save for {campsite.name}")
             except:
                 print(f"forecast save error for campsite {campsite.name}")
             time.sleep(1)
