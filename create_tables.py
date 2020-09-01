@@ -119,21 +119,21 @@ def build_cloud_databases(provider):
     #         print(r.text)
 
     # build zipcode database
-    fname = "us-zip-code-latitude-and-longitude.csv"
-    with open(fname, newline="", errors="ignore") as csvfile:
-        zipcode_reader = csv.reader(csvfile, delimiter=";", quotechar="|")
-        for row in zipcode_reader:
-            zipcode = row[0]
-            lat = row[3]
-            lng = row[4]
+    # fname = "us-zip-code-latitude-and-longitude.csv"
+    # with open(fname, newline="", errors="ignore") as csvfile:
+    #     zipcode_reader = csv.reader(csvfile, delimiter=";", quotechar="|")
+    #     for row in zipcode_reader:
+    #         zipcode = row[0]
+    #         lat = row[3]
+    #         lng = row[4]
 
-            url = f"{service_url}/zipcode/{zipcode}"
-            data = {
-                "lat": lat,
-                "lng": lng,
-            }
-            r = requests.post(url, data=data)
-            print(r.text)
+    #         url = f"{service_url}/zipcode/{zipcode}"
+    #         data = {
+    #             "lat": lat,
+    #             "lng": lng,
+    #         }
+    #         r = requests.post(url, data=data)
+    #         print(r.text)
 
 
 database_build = input("do you want to rebuild databases? [y/n]: \n")
