@@ -119,6 +119,14 @@ sudo systemctl reload nginx (to make it read config file)
 sudo systemctl restart nginx
 sudo systemctl start uwsgi_items_rest
 
+POST /forecasts/all was running into a timeout issue (since open weather only allows 1 forecast a second)...
+fixed this with
+
+uwsgi_read_timeout 3600s;
+uwsgi_send_timeout 3600s;
+
+inserted in location section of etc/nginx/sites-available/items-rest.conf. This replaced proxy_read_timeout 3600; proxy_send_timeout 3600; which are nginx configurations-- apparently nginx doesn't allow settings longer than 60 seconds
+
 ### Most Useful API endpoints
 
 ```
