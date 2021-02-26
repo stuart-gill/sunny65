@@ -80,11 +80,13 @@ Once your locations are found, you can check the map of campsites that's been bu
 SSH into digital ocean with
 
 ```
-ssh stuart@128.199.0.88
+ssh stuart@{digital ocean ip address}
 ```
 
-128.199.0.88 is the IP address of the api.
+{digital ocean ip address} is the IP address of the api.
 Type $sudo su to access superuser
+Login as user "stuart"
+/var/www/html/items-rest is directory that has our app in it
 Type $psql as user stuart to connect to Postgres database which is named "stuart"
 Type $\conninfo for info about the database
 Type $\q to quit the Postgres terminal
@@ -109,7 +111,7 @@ The run.py file exists to make sure the database exists before we run the app.py
 
 socket.sock file is what allows communication between uwsgi file and NGINX
 
-harakiri = 7000 is a long time (7000 seconds) before killing a process
+harakiri = 10000 is a long time (10000 seconds) before killing a process
 
 To start the service, enter:
 
@@ -120,12 +122,20 @@ sudo systemctl restart nginx
 sudo systemctl start uwsgi_items_rest
 
 POST /forecasts/all was running into a timeout issue (since open weather only allows 1 forecast a second)...
-fixed this with
+fixed this with. Should change this to operate some other way so regular API requests time out normally
 
-uwsgi_read_timeout 3600s;
-uwsgi_send_timeout 3600s;
+uwsgi_read_timeout 10000s;
+uwsgi_send_timeout 10000s;
 
 inserted in location section of etc/nginx/sites-available/items-rest.conf. This replaced proxy_read_timeout 3600; proxy_send_timeout 3600; which are nginx configurations-- apparently nginx doesn't allow settings longer than 60 seconds
+
+Set up domain sgill.dev through google domains, and DNS through cloudflare. Could also set up MX email routing with CloudFlare (haven't done that). Using strict SSL encryption and using cloudflare's own certificates, which are set in server config files.
+
+Added ssh keys from cloudflare to /var/www/ssl in digital ocean
+
+Changed "listen 80" to "listen 443 default_server" in items-rest.conf file, and add server_name sgill.dev, ssl on, ssl_certificate locations
+
+Added this in items-rest.conf to fix CORS issue: "add_header 'Access-Control-Allow-Origin' 'https://kind-davinci-e84710.netlify.app/' always;"
 
 ### Most Useful API endpoints
 
