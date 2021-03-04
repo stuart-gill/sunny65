@@ -128,9 +128,13 @@ class TravelTimeByZipList(Resource):
         """
         data = TravelTimeByZipList.parser.parse_args()
         zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
+        # default set in case maximum_linear_distance parameter isnt' sent in api call
+        distance = 120
+        if data["maximum_linear_distance"]:
+            distance = data["maximum_linear_distance"]
         # is there any advantage to calling API below rather than using CampsiteModel directly?
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
-            zipcode_obj.lat, zipcode_obj.lng, data["maximum_linear_distance"]
+            zipcode_obj.lat, zipcode_obj.lng, distance
         )
 
         for campsite in campsites:
