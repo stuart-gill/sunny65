@@ -34,7 +34,7 @@ class WeatherForecastList(Resource):
                 forecast.delete_from_db()
 
             forecast_js = WeatherForecastModel.get_forecast(campsite.lat, campsite.lng)
-            pprint(forecast_js)
+           # pprint(forecast_js)
             try:
                 for period in forecast_js["list"]:
                     forecast_time = datetime.fromtimestamp(period["dt"])
