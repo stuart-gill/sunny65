@@ -1,7 +1,9 @@
 from db import db
+import polyline
+
 
 # uncomment if running locally with config folder
-# import config
+import config
 
 import os
 
@@ -77,6 +79,28 @@ class TravelTimeModel(db.Model):
         duration_value = js["rows"][0]["elements"][0]["duration"]["value"]
         duration_text = js["rows"][0]["elements"][0]["duration"]["text"]
         return (duration_value, duration_text)
+
+    @classmethod
+    def get_durations_from_google(cls, zipcode_lat, zipcode_lng, campsite_locations):
+        # for hosted on Digital Ocean (and Heroku too?)
+        api_key = os.environ.get("GMAPS_API_KEY")
+        # if hosted locally
+        if not api_key:
+            api_key = config.GMAPS_API_KEY
+        serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
+
+        # polyline encoding destinations tuples for batching distance matrix api call
+        destinations_param = "enc:" + polyline.encode(campsite_locations) + ":"
+        params = {
+            "origins": f"{zipcode_lat},{zipcode_lng}",
+            "destinations": destinations_param,
+            "key": api_key,
+        }
+        response = requests.get(serviceurl, params=params)
+        js = response.json()
+        elements = js["rows"][0]["elements"]
+
+        return elements
 
     def save_to_db(self):
         db.session.add(self)

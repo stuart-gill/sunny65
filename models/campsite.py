@@ -80,6 +80,10 @@ class CampsiteModel(db.Model):
             acceptable_distance / EARTH_RADIUS / np.cos(np.deg2rad(origin_lat))
         )
 
+        # Note: this returns campsites within a square boundary. Calculating which campsites
+        # are within a radius is more expensive but could be done after this first cut below
+        # Depends on whether cost of getting drive time for extra points outweighs cost of calculating points within radius
+        # see https://www.movable-type.co.uk/scripts/latlong-db.html
         return cls.query.filter(
             cls.lat > min_lat, cls.lat < max_lat, cls.lng > min_lng, cls.lng < max_lng
         ).all()

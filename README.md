@@ -137,6 +137,11 @@ Changed "listen 80" to "listen 443 default_server" in items-rest.conf file, and 
 
 Added this in items-rest.conf to fix CORS issue: "add_header 'Access-Control-Allow-Origin' 'https://kind-davinci-e84710.netlify.app/' always;"
 
+TODO: change CampsiteModel/find_distance_as_crow_flies method to calculate using a radius rather than max and min lat and long, which creates a square
+TODO: try using OpenRouteService distance matrix to get travel times from zipcode to campsites
+TODO: check out batch requests for Google Distance Matrix (max 25 destinations per batch, can use Encoded Polyline Algorithm )
+TODO: maybe add a google Place ID field to campsites location? would guarantee correct travel time info. check Geocoding API
+
 ### Most Useful API endpoints
 
 ```

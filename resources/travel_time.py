@@ -129,34 +129,79 @@ class TravelTimeByZipList(Resource):
         data = TravelTimeByZipList.parser.parse_args()
         zipcode_obj = ZipcodeModel.find_by_zipcode(zipcode)
         # default set in case maximum_linear_distance parameter isnt' sent in api call
-        distance = 120
+        distance = 300
         if data["maximum_linear_distance"]:
             distance = data["maximum_linear_distance"]
         # is there any advantage to calling API below rather than using CampsiteModel directly?
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
             zipcode_obj.lat, zipcode_obj.lng, distance
         )
+        counter = 0
 
-        for campsite in campsites:
-            try:
-                duration = TravelTimeModel.get_duration_from_google(
-                    zipcode_obj.lat, zipcode_obj.lng, campsite.lat, campsite.lng
-                )
-
-            except:
-                duration = (-1, "")
-
-            existing_travel_time = TravelTimeModel.find_by_ids(
-                zipcode_obj.id, campsite.id
+        # new version that will batch calls to distance matrix API 25 at a time
+        iterations = int(len(campsites) / 25)
+        for i in range(iterations):
+            twentyfive_campsites = []
+            for campsite in campsites[i * 25 : (i + 1) * 25]:
+                latlong_tuple = (campsite.lat, campsite.lng)
+                twentyfive_campsites.append(latlong_tuple)
+            elements = TravelTimeModel.get_durations_from_google(
+                zipcode_obj.lat, zipcode_obj.lng, twentyfive_campsites
             )
-            if existing_travel_time:
-                existing_travel_time.delete()
-            travel_time = TravelTimeModel(zipcode_obj.id, campsite.id, *duration)
-            try:
-                travel_time.save_to_db()
-            except:
-                print(f"save travel time failed for campsite {campsite.id}")
-        return {"message": "travel times inserted"}
+
+            for j, campsite in enumerate(campsites[i * 25 : (i + 1) * 25]):
+                existing_travel_time = TravelTimeModel.find_by_ids(
+                    zipcode_obj.id, campsite.id
+                )
+                if existing_travel_time:
+                    # delete this entry and try to get travel time if previously errored
+                    if existing_travel_time.duration_value == -1:
+                        existing_travel_time.delete()
+                    # if we already have a valid travel time, skip
+                    else:
+                        break
+                duration_value = -1
+                duration_text = ""
+                if elements[j]["status"] == "OK":
+                    duration_value = elements[j]["duration"]["value"]
+                    duration_text = elements[j]["duration"]["text"]
+
+                travel_time = TravelTimeModel(
+                    zipcode_obj.id, campsite.id, duration_value, duration_text,
+                )
+                try:
+                    travel_time.save_to_db()
+                    counter += 1
+                except:
+                    print(f"save travel time failed for campsite {campsite.id}")
+
+        # old version that goes one by one
+        # for campsite in campsites:
+        #     try:
+        #         duration = TravelTimeModel.get_duration_from_google(
+        #             zipcode_obj.lat, zipcode_obj.lng, campsite.lat, campsite.lng
+        #         )
+
+        #     except:
+        #         duration = (-1, "")
+
+        #     existing_travel_time = TravelTimeModel.find_by_ids(
+        #         zipcode_obj.id, campsite.id
+        #     )
+        #     if existing_travel_time:
+        #         # delete this entry and try to get travel time if previously errored
+        #         if existing_travel_time.duration_value == -1:
+        #             existing_travel_time.delete()
+        #         # if we already have a valid travel time, skip
+        #         else:
+        #             break
+        #     travel_time = TravelTimeModel(zipcode_obj.id, campsite.id, *duration)
+        #     try:
+        #         travel_time.save_to_db()
+        #         counter += 1
+        #     except:
+        #         print(f"save travel time failed for campsite {campsite.id}")
+        return {"message": f"{counter} travel times inserted"}
 
 
 class TravelTimeList(Resource):
