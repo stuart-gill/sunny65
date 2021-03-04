@@ -111,7 +111,12 @@ class TravelTimeByZipList(Resource):
         travel_times = TravelTimeModel.find_campsites_by_duration(
             zipcode_obj.id, data["willing_travel_time"]
         )
-
+        # TODO: bad code! Temporary way to force a travel time request from unexplored zipcode to get travel times from google
+        if len(travel_times) == 0 and data["willing_travel_time"] > 1500:
+            self.post(zipcode)
+            travel_times = TravelTimeModel.find_campsites_by_duration(
+                zipcode_obj.id, data["willing_travel_time"]
+            )
         return {
             "count": len(travel_times),
             "travel_times": [travel_time.json() for travel_time in travel_times],
@@ -127,11 +132,13 @@ class TravelTimeByZipList(Resource):
         campsites = CampsiteModel.find_by_distance_as_crow_flies(
             zipcode_obj.lat, zipcode_obj.lng, data["maximum_linear_distance"]
         )
+
         for campsite in campsites:
             try:
                 duration = TravelTimeModel.get_duration_from_google(
                     zipcode_obj.lat, zipcode_obj.lng, campsite.lat, campsite.lng
                 )
+
             except:
                 duration = (-1, "")
 

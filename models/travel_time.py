@@ -59,9 +59,11 @@ class TravelTimeModel(db.Model):
     def get_duration_from_google(
         cls, zipcode_lat, zipcode_lng, campsite_lat, campsite_lng
     ):
-
-        # api_key = config.GMAPS_API_KEY
+        # for hosted on Digital Ocean (and Heroku too?)
         api_key = os.environ.get("GMAPS_API_KEY")
+        # if hosted locally
+        if not api_key:
+            api_key = config.GMAPS_API_KEY
         serviceurl = "https://maps.googleapis.com/maps/api/distancematrix/json?"
 
         params = {
@@ -71,6 +73,7 @@ class TravelTimeModel(db.Model):
         }
         response = requests.get(serviceurl, params=params)
         js = response.json()
+
         duration_value = js["rows"][0]["elements"][0]["duration"]["value"]
         duration_text = js["rows"][0]["elements"][0]["duration"]["text"]
         return (duration_value, duration_text)
