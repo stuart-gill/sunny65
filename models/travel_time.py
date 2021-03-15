@@ -80,6 +80,7 @@ class TravelTimeModel(db.Model):
         duration_text = js["rows"][0]["elements"][0]["duration"]["text"]
         return (duration_value, duration_text)
 
+    # get durations in batches of 25 campsite locations to save time
     @classmethod
     def get_durations_from_google(cls, zipcode_lat, zipcode_lng, campsite_locations):
         # for hosted on Digital Ocean (and Heroku too?)

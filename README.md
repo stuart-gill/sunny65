@@ -141,6 +141,7 @@ TODO: change CampsiteModel/find_distance_as_crow_flies method to calculate using
 TODO: try using OpenRouteService distance matrix to get travel times from zipcode to campsites
 TODO: check out batch requests for Google Distance Matrix (max 25 destinations per batch, can use Encoded Polyline Algorithm )
 TODO: maybe add a google Place ID field to campsites location? would guarantee correct travel time info. check Geocoding API
+TODO: change front end to recenter on entered zipcode
 
 ### Most Useful API endpoints
 
