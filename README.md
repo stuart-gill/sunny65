@@ -137,6 +137,10 @@ Changed "listen 80" to "listen 443 default_server" in items-rest.conf file, and 
 
 Added this in items-rest.conf to fix CORS issue: "add_header 'Access-Control-Allow-Origin' 'https://kind-davinci-e84710.netlify.app/' always;"
 
+Added a cronjob to run "update_weather.py" every day to get all fresh forecasts without using the POST /forecasts/all endpoint... should be able to delete that endpoint now. Cronjobs can be viewed by typing $cronjob -l  in terminal and edited with $cronjob -e to edit. 
+
+Next up I should find a way to get travel_times without running one giant API call-- after doing that, I could get rid of the long Harikari timout and uwsgi timeouts
+
 TODO: change CampsiteModel/find_distance_as_crow_flies method to calculate using a radius rather than max and min lat and long, which creates a square
 TODO: try using OpenRouteService distance matrix to get travel times from zipcode to campsites
 TODO: check out batch requests for Google Distance Matrix (max 25 destinations per batch, can use Encoded Polyline Algorithm )
