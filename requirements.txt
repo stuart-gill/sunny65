@@ -6,3 +6,4 @@ uwsgi
 psycopg2
 requests
 numpy
+polyline
