@@ -48,6 +48,7 @@ class TravelTimeModel(db.Model):
         ).first()
 
     # think that db.joinedload(campsite) will auto load campsite for each duration in one select statement rather than two
+    # Actually commenting out joinedload seems to have no effect on contents or time of api response! why?
     @classmethod
     def find_campsites_by_duration(cls, zipcode_id, willing_duration):
         return (
@@ -56,6 +57,25 @@ class TravelTimeModel(db.Model):
             .options(db.joinedload(cls.campsite))
             .all()
         )
+
+    # method that also filters by forecast temp
+    # returns all durations/campsites where campsite has at least one temp above min temp (not sure why it works this way)
+    # about twice as slow as find_campsites_by_duration
+    # how to speed up?
+    # note: must import campsitemodel and weatherforcastmodel and check those models to make sure no circular imports
+
+    # @classmethod
+    # def find_campsites_by_duration_and_temp(
+    #     cls, zipcode_id, willing_duration, min_temp
+    # ):
+    #     return (
+    #         cls.query.filter_by(zipcode_id=zipcode_id)
+    #         .filter(cls.duration_value < willing_duration, cls.duration_value >= 0)
+    #         .join(cls.campsite)
+    #         .join(CampsiteModel.weather_forecasts)
+    #         .filter(WeatherForecastModel.temperature > min_temp)
+    #         .all()
+    #     )
 
     @classmethod
     def get_duration_from_google(
