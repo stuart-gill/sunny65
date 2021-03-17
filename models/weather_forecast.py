@@ -67,11 +67,11 @@ class WeatherForecastModel(db.Model):
 
     def json(self):
         return {
-            "campsite_id": self.campsite_id,
-            "campsite_name": self.campsite.name,
+            # "campsite_id": self.campsite_id,
+            # "campsite_name": self.campsite.name,
             "forecast_time": self.forecast_time.isoformat(),
             "short_forecast": self.short_forecast,
             "temperature": self.temperature,
-            "time_created": self.time_created.isoformat(),
+            # "time_created": self.time_created.isoformat(),
         }
 
