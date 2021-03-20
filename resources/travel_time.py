@@ -96,7 +96,6 @@ class TravelTimeByZipList(Resource):
 
     parser = reqparse.RequestParser()
     parser.add_argument("willing_travel_time", type=int)
-    parser.add_argument("maximum_linear_distance", type=int)
     parser.add_argument("min_temp", type=int)
 
     def get(self, zipcode):

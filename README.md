@@ -84,27 +84,38 @@ ssh stuart@{digital ocean ip address}
 ```
 
 {digital ocean ip address} is the IP address of the api.
+
 Type $sudo su to access superuser
+
 Login as user "stuart"
+
 /var/www/html/items-rest is directory that has our app in it
-Type $psql as user stuart to connect to Postgres database which is named "stuart"
-Type $\conninfo for info about the database
-Type $\q to quit the Postgres terminal
+
+Type $psql as user stuart to connect to Postgres database which is named "stuart". Then Type $\conninfo for info about the database. Type $\q to quit the Postgres terminal
+
 vi /etc/postgresql/9.5/main/pg_hba.conf to modify Postgres login settings (login must be with MD5 password. Already did this. SQLAlchemy won't work without it).
+
 also using NGINX... communicates with UWSGI to allow multithreading
+
 Type $sudo ufw status : to get info about what's allowed through the firewall 
+
 $systemctl status nginx : to get info about nginx
 $systemctl reload nginx : (or restart instead of reload. Reload is graceful restart. restart only when changing ports or interfaces)
-Nginx config file is at /etc/nginx/sites-available/items-rest.conf (must type cd /etc or whatever, ls from ~ won't show anything)
-This config also contains info about uwsgi stuff.
-This config file is linked (soft) to /sites-available
-The whole git repo is copied (cloned) into /var/www/html/items-rest
+
+Nginx config file is at /etc/nginx/sites-available/items-rest.conf (must type cd /etc or whatever, ls from ~ won't show anything). This config also contains info about uwsgi stuff. This config file is linked (soft) to /sites-available. The whole git repo is copied (cloned) into /var/www/html/items-rest
+
 We also use a venv and install everything from the requirements.txt file in the venv
+
 ENV variables about the uwsgi service are stored in this file: /etc/systemd/system/uwsgi_items_rest.service
+
 This file also includes the run command (called ExecStart), Restart=always, KillSignal=SIGQUIT, Type=notify, NotifyAccess=all (notification parameters).  
+
 This service is going to run uWSGI and uWSGI is going to run the Flask app.
+
 5432 is the port Postgres typically runs on
+
 The Install part of this file allows us to start the service when the server boots up.
+
 The /var/www/html/items-rest/uwsgi.ini files are different between Heroku and Digital Ocean
 
 The run.py file exists to make sure the database exists before we run the app.py file
@@ -135,7 +146,8 @@ Added ssh keys from cloudflare to /var/www/ssl in digital ocean
 
 Changed "listen 80" to "listen 443 default_server" in items-rest.conf file, and add server_name sgill.dev, ssl on, ssl_certificate locations
 
-Added this in items-rest.conf to fix CORS issue: "add_header 'Access-Control-Allow-Origin' 'https://kind-davinci-e84710.netlify.app/' always;"
+Added this in items-rest.conf to fix CORS issue: "add_header 'Access-Control-Allow-Origin' 'https://www.sunny65.com/' always;"
+
 
 Added a cronjob to run "update_weather.py" every day to get all fresh forecasts without using the POST /forecasts/all endpoint... should be able to delete that endpoint now. Cronjobs can be viewed by typing $cronjob -l  in terminal and edited with $cronjob -e to edit. 
 
@@ -149,10 +161,10 @@ TODO: change front end to recenter on entered zipcode
 ### Most Useful API endpoints
 
 ```
-POST /forecasts/all
+POST /forecasts/{campsite_id}
 ```
 
-gets updated forecast for every campsite from open weather api, saves to db
+gets updated forecast for campsite from open weather api, saves to db
 
 ```
 POST /traveltimes/<zipcode> {"maximum_linear_distance": x}
